@@ -74,6 +74,8 @@ details[open]>summary::after{content:" –"}
 .figure{display:block;width:100%;max-height:190px;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;fill:var(--ink)}
 .figure .prop{stroke:var(--muted);stroke-width:3;fill:none;opacity:.6}
 .figure .ghost{opacity:.28}
+.figure line,.figure path{vector-effect:non-scaling-stroke}
+.figure .arrow{stroke:var(--accent);stroke-width:3;fill:none}
 .figure .fig-txt{font-family:var(--body);font-size:11px;font-weight:600;stroke:none;fill:var(--muted)}
 .fig-box{background:color-mix(in srgb,var(--line) 35%,transparent);border-radius:12px;padding:10px 8px 4px}
 .howto{grid-column:1/-1}
@@ -203,13 +205,13 @@ const FAMS = [
   {n:'Sentadilla shrimp asistida', r:[3,8], side:true, c:'Sobre una pierna, agarra el otro pie detrás y baja la rodilla al suelo. Apóyate en la pared con una mano.'},
   {n:'Pistol negativa', r:[3,8], side:true, c:'Sobre una pierna, la otra estirada al frente. Baja lo más lento posible y sube con las dos.'}]},
  {id:'post', name:'Espalda y glúteo', start:1, vars:[
-  {n:'Puente de glúteo', r:[10,20], c:'Tumbado boca arriba, rodillas dobladas. Sube la cadera apretando glúteos.'},
-  {n:'Puente con pausa', r:[8,15], c:'Puente de glúteo aguantando 3 s arriba.'},
+  {n:'Puente de glúteo', r:[10,20], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados cerca del culo. Empuja con los talones y sube la cadera hasta que hombros, cadera y rodillas queden en línea recta. Baja despacio.'},
+  {n:'Puente con pausa', r:[8,15], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados. Sube la cadera hasta que hombros, cadera y rodillas formen una línea recta, aguanta ahí 3 s apretando los glúteos y baja despacio. Los hombros y la cabeza no se despegan del suelo.'},
   {n:'Superman con pausa', r:[8,15], c:'Boca abajo, levanta brazos y piernas a la vez. Aguanta 2 s arriba.'},
-  {n:'Puente a una pierna', r:[6,15], side:true, c:'Una pierna estirada en el aire, empuja con el talón de la otra. Cuenta por pierna.'},
+  {n:'Puente a una pierna', r:[6,15], side:true, c:'Como el puente normal, pero con una pierna estirada en el aire. Empuja con el talón de la pierna apoyada y sube la cadera sin que se tuerza. Cuenta por pierna.'},
   {n:'Nadador', r:[10,20], c:'Boca abajo, brazos y piernas en el aire. Alterna brazo y pierna contrarios. Cada lado cuenta 1.'},
   {n:'Y-T-W en el suelo', r:[5,10], c:'Boca abajo, pecho levantado. Forma Y, T y W con los brazos, aguantando 2 s en cada una. 1 ronda = 1 rep.'},
-  {n:'Puente a una pierna con pausa', r:[6,12], side:true, c:'Puente a una pierna aguantando 3 s arriba. Cuenta por pierna.'}]},
+  {n:'Puente a una pierna con pausa', r:[6,12], side:true, c:'Puente a una pierna: sube la cadera hasta la línea recta, aguanta 3 s arriba y baja despacio. Cuenta por pierna.'}]},
  {id:'core', name:'Core', start:1, vars:[
   {n:'Plancha de rodillas', r:[15,45], t:true, c:'Antebrazos y rodillas en el suelo. Cuerpo recto, aprieta abdomen y glúteos.'},
   {n:'Plancha', r:[20,60], t:true, c:'Antebrazos y puntas de los pies. Ni cadera caída ni culo en pompa.'},
@@ -255,9 +257,9 @@ function drawFrame(f){
     s+=`<circle cx="${hd[0]}" cy="${hd[1]}" r="7.5" stroke="none"/>`;
   } else {
     const kh=f.kh||[1,0], eh=f.eh||[0,1];
-    if (f.F2) s+=limb(f.P,f.F2,LL,f.kh2||kh,.45);
+    if (f.F2) s+=limb(f.P,f.F2,f.ll||LL,f.kh2||kh,.45);
     if (f.H2) s+=limb(f.S,f.H2,LA,f.eh2||eh,.45);
-    s+=ln(f.P,f.S)+limb(f.P,f.F1,LL,kh)+limb(f.S,f.H1,LA,eh);
+    s+=ln(f.P,f.S)+limb(f.P,f.F1,f.ll||LL,kh)+limb(f.S,f.H1,LA,eh);
     const dx=f.S[0]-f.P[0], dy=f.S[1]-f.P[1], d=Math.hypot(dx,dy)||1;
     const hd=f.head||[f.S[0]+dx/d*12, f.S[1]+dy/d*12];
     s+=`<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="7.5" stroke="none"/>`;
@@ -297,22 +299,26 @@ const FIG={
    b:{S:[110,64],P:[86,96],F1:[104,G],F2:[136,94],kh:[1,-1],H1:[148,62]}, txt:'baja lento'}
  ],
  post:[
-  {a:{S:[60,104],P:[98,104],F1:[138,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[48,104]},
-   b:{S:[62,104],P:[94,82],F1:[134,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[50,104]}},
-  {a:{S:[60,104],P:[98,104],F1:[138,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[48,104]},
-   b:{S:[62,104],P:[94,82],F1:[134,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[50,104]}, txt:'3 s arriba'},
+  {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],H1:[93,110],kh:[0,-1],eh:[0,1],head:[42,106]},
+   z:1.6,cx:90,arrow:[89,111,89,96],
+   b:{ll:[30,34],S:[54,106],P:[89,90],F1:[116,G],H1:[93,110],kh:[0,-1],eh:[0,1],head:[42,106]}},
+  {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],H1:[93,110],kh:[0,-1],eh:[0,1],head:[42,106]},
+   z:1.6,cx:90,arrow:[89,111,89,96],
+   b:{ll:[30,34],S:[54,106],P:[89,90],F1:[116,G],H1:[93,110],kh:[0,-1],eh:[0,1],head:[42,106]}, txt:'3 s arriba'},
   {a:{S:[128,106],P:[90,106],F1:[40,108],H1:[168,106],eh:[0,-1],head:[141,104]},
    b:{S:[126,98],P:[90,106],F1:[42,94],H1:[164,84],eh:[0,-1],head:[138,92]}, txt:'2 s arriba'},
-  {a:{S:[60,104],P:[98,104],F1:[138,G],F2:[140,84],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[48,104]},
-   b:{S:[62,104],P:[94,82],F1:[134,G],F2:[142,58],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[50,104]}},
+  {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],F2:[152,96],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]},
+   z:1.6,cx:90,arrow:[89,111,89,96],
+   b:{ll:[30,34],S:[54,106],P:[89,90],F1:[116,G],F2:[147,64],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]}},
   {a:{S:[126,100],P:[90,106],F1:[42,104],F2:[42,92],H1:[166,84],H2:[166,102],eh:[0,-1],head:[138,95]},
    b:{S:[126,100],P:[90,106],F1:[42,92],F2:[42,104],H1:[166,102],H2:[166,84],eh:[0,-1],head:[138,95]}},
   {extra:[
     {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[66,-8],HR:[134,-8],tx:35-62,ty:42.6,sc:.62},
     {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[49,24],HR:[151,24],tx:100-62,ty:42.6,sc:.62},
     {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[72,6],HR:[128,6],ehL:[0,1],ehR:[0,1],tx:165-62,ty:42.6,sc:.62}], txt:'Y · T · W (visto desde arriba)'},
-  {a:{S:[60,104],P:[98,104],F1:[138,G],F2:[140,84],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[48,104]},
-   b:{S:[62,104],P:[94,82],F1:[134,G],F2:[142,58],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[50,104]}, txt:'3 s arriba'}
+  {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],F2:[152,96],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]},
+   z:1.6,cx:90,arrow:[89,111,89,96],
+   b:{ll:[30,34],S:[54,106],P:[89,90],F1:[116,G],F2:[147,64],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]}, txt:'3 s arriba'}
  ],
  core:[
   {b:{...knees([70,110],-17),H1:[148,G],eh:[-1,1],kh:[0,1]}},
@@ -326,10 +332,13 @@ const FIG={
 };
 function figSVG(fid,lvl){
   const d=FIG[fid]?.[lvl]; if(!d) return '';
-  let s=`<g class="prop">${d.p?PROPS[d.p]:''}<line x1="4" y1="${G+1}" x2="196" y2="${G+1}"/></g>`;
+  let s='';
   if (d.a) s+=`<g class="${d.b?'fig ghost':'fig'}">${drawFrame(d.a)}</g>`;
   (d.extra||[]).forEach(e=>s+=`<g class="fig">${drawFrame(e)}</g>`);
   if (d.b) s+=`<g class="fig">${drawFrame(d.b)}</g>`;
+  if (d.arrow){ const [x1,y1,x2,y2]=d.arrow; s+=`<path class="arrow" d="M${x1} ${y1}L${x2} ${y2}M${x2-3} ${y2+4}L${x2} ${y2}L${x2+3} ${y2+4}"/>` }
+  if (d.z){ const z=d.z, cx=d.cx||100; s=`<g transform="translate(${cx*(1-z)} ${G*(1-z)}) scale(${z})">${s}</g>` }
+  s=`<g class="prop">${d.p?PROPS[d.p]:''}<line x1="4" y1="${G+1}" x2="196" y2="${G+1}"/></g>`+s;
   if (d.txt) s+=`<text x="196" y="${-1}" text-anchor="end" class="fig-txt">${d.txt}</text>`;
   return `<svg class="figure" viewBox="0 -12 200 128" role="img" aria-hidden="true">${s}</svg>`;
 }
