@@ -74,6 +74,7 @@ details[open]>summary::after{content:" –"}
 .figure{display:block;width:100%;max-height:190px;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;fill:var(--ink)}
 .figure .prop{stroke:var(--muted);stroke-width:3;fill:none;opacity:.6}
 .figure .ghost{opacity:.28}
+.figure .towel{stroke:var(--warm);stroke-width:3}
 .figure line,.figure path{vector-effect:non-scaling-stroke}
 .figure .arrow{stroke:var(--accent);stroke-width:3;fill:none}
 .figure .fig-txt{font-family:var(--body);font-size:11px;font-weight:600;stroke:none;fill:var(--muted)}
@@ -94,6 +95,7 @@ details[open]>summary::after{content:" –"}
     </header>
     <div class="card" id="plan"></div>
     <button class="btn" id="start-session">Empezar sesión</button>
+    <button class="btn ghost" id="start-mob">Movilidad · 12 min</button>
     <p class="muted" style="font-size:.9rem">Circuito: haces los 4 ejercicios seguidos y repites 3 rondas. Calienta un par de minutos antes (movilidad de hombros, cadera y unas sentadillas suaves).</p>
 
     <details class="card" id="hist-box">
@@ -106,7 +108,8 @@ details[open]>summary::after{content:" –"}
         <div><div class="label">Descanso entre ejercicios</div>
           <div class="row" id="rest-opts" style="margin-top:6px"></div></div>
         <div><div class="label">Cómo sube la dificultad</div>
-          <p class="cue" style="margin-top:4px">Cuando cumples el objetivo en las 3 series durante 5 sesiones seguidas, al terminar te pregunta qué tal fue. Si contestas Fácil o Justo, sube 1 rep (o 5 s); si contestas Al límite, se mantiene y te vuelve a preguntar la próxima vez. Al pasar del tope de un ejercicio, pasas a la variante siguiente. Una sesión sin cumplir pone el contador a 0, y si dos sesiones seguidas te quedas por debajo del 80 %, baja.</p></div>
+          <p class="cue" style="margin-top:4px">Cuando cumples el objetivo en las 3 series durante 5 sesiones seguidas, al terminar te pregunta qué tal fue. Si contestas Fácil o Justo, sube 1 rep (o 5 s); si contestas Al límite, se mantiene y te vuelve a preguntar la próxima vez. Al pasar del tope de un ejercicio, pasas a la variante siguiente. Una sesión sin cumplir pone el contador a 0, y si dos sesiones seguidas te quedas por debajo del 80 %, baja.</p>
+          <p class="cue" style="margin-top:6px">Los días A y B se alternan solos. A: empuje, piernas, hombros y core. B: empuje, piernas, espalda y bíceps, y glúteo. Al final de cada sesión hay 3 minutos de estiramientos.</p></div>
         <div class="row"><button class="link" id="retest">Repetir prueba inicial</button>
           <button class="link danger" id="reset">Borrar todo el progreso</button></div>
       </div>
@@ -120,7 +123,7 @@ details[open]>summary::after{content:" –"}
     <p>Cada grupo de músculos es una escalera de ejercicios, del más fácil al más difícil. Primero una prueba corta para saber en qué peldaño empiezas. Después, cada sesión te dice qué hacer y sube la dificultad según lo que apuntes.</p>
     <div class="card" id="ladders-preview"></div>
     <button class="btn" id="start-test">Hacer la prueba inicial</button>
-    <p class="muted" style="font-size:.9rem">Unos 10 minutos. Haz cada ejercicio una vez, con buena técnica, hasta que no puedas más.</p>
+    <p class="muted" style="font-size:.9rem">Unos 15 minutos. Haz cada ejercicio una vez, con buena técnica, hasta que no puedas más.</p>
   </section>
 
   <!-- PRUEBA -->
@@ -175,6 +178,19 @@ details[open]>summary::after{content:" –"}
     </div>
   </section>
 
+  <!-- ESTIRAMIENTOS -->
+  <section id="v-stretch" class="stack" hidden>
+    <div class="row" style="justify-content:space-between"><div class="label" id="st-title">Estiramientos</div><div class="label" id="st-step"></div></div>
+    <div class="progress"><span id="st-bar"></span></div>
+    <div class="fig-box" id="st-fig"></div>
+    <div><h2 id="st-name"></h2></div>
+    <p class="cue" id="st-cue"></p>
+    <div class="big rest" id="st-clock">30</div>
+    <p class="label rest" style="text-align:center;min-height:1em" id="st-side"></p>
+    <div class="row" style="flex-wrap:nowrap"><button class="btn ghost" id="st-pause">Pausa</button><button class="btn ghost" id="st-skip">Siguiente</button></div>
+    <button class="link" id="st-end">Terminar estiramientos</button>
+  </section>
+
   <!-- RESUMEN -->
   <section id="v-summary" class="stack" hidden>
     <div><div class="label" id="sum-label">Sesión terminada</div><h1 id="sum-title">Hecho</h1></div>
@@ -186,7 +202,7 @@ details[open]>summary::after{content:" –"}
 <script>
 /* ---------- Ejercicios: cada grupo es una escalera ---------- */
 const FAMS = [
- {id:'push', name:'Empuje', start:3, vars:[
+ {id:'push', name:'Empuje', start:3, day:'AB', vars:[
   {n:'Flexiones en la pared', r:[8,20], c:'De pie, manos en la pared a la altura del pecho. Cuerpo recto, baja hasta casi tocar con la nariz.'},
   {n:'Flexiones inclinadas', r:[6,15], c:'Manos en una mesa o encimera firme. Cuerpo en línea, pecho hasta el borde.'},
   {n:'Flexiones de rodillas', r:[6,15], c:'Rodillas en el suelo, cadera alineada con la espalda. Pecho al suelo.'},
@@ -195,7 +211,7 @@ const FAMS = [
   {n:'Flexiones diamante', r:[5,12], c:'Manos juntas formando un rombo bajo el pecho. Codos pegados al cuerpo.'},
   {n:'Flexiones arquero', r:[3,8], side:true, c:'Manos muy abiertas. Baja hacia un lado con ese brazo doblado y el otro casi recto. Cuenta por lado.'},
   {n:'Flexiones pseudo planche', r:[3,10], c:'Manos a la altura de la cintura, dedos hacia fuera, hombros adelantados por delante de las manos.'}]},
- {id:'legs', name:'Piernas', start:1, vars:[
+ {id:'legs', name:'Piernas', start:1, day:'AB', vars:[
   {n:'Sentadilla a silla', r:[8,20], c:'Siéntate en una silla y levántate sin impulso, sin usar las manos.'},
   {n:'Sentadilla', r:[10,25], c:'Pies a la anchura de los hombros, talones apoyados. Baja hasta que la cadera pase la rodilla.'},
   {n:'Sentadilla con pausa', r:[8,15], c:'Baja y aguanta 3 s abajo. Sube controlado.'},
@@ -204,7 +220,22 @@ const FAMS = [
   {n:'Sentadilla cosaca', r:[5,12], side:true, c:'Piernas muy abiertas. Baja sobre una pierna con la otra estirada y el pie hacia arriba. Cuenta por lado.'},
   {n:'Sentadilla shrimp asistida', r:[3,8], side:true, c:'Sobre una pierna, agarra el otro pie detrás y baja la rodilla al suelo. Apóyate en la pared con una mano.'},
   {n:'Pistol negativa', r:[3,8], side:true, c:'Sobre una pierna, la otra estirada al frente. Baja lo más lento posible y sube con las dos.'}]},
- {id:'post', name:'Espalda y glúteo', start:1, vars:[
+ {id:'shoulder', name:'Hombros', start:1, day:'A', vars:[
+  {n:'Toques de hombro en pica', r:[8,20], c:'En V invertida: cadera alta, manos y pies en el suelo. Levanta una mano y toca el hombro contrario sin mover la cadera. Cada toque cuenta 1.'},
+  {n:'Flexiones pica', r:[5,12], c:'En V invertida, dobla los codos y baja la cabeza hacia el suelo, un poco por delante de las manos. Codos hacia atrás, no abiertos.'},
+  {n:'Flexiones pica con pausa', r:[5,10], c:'Como la flexión pica, aguantando 2 s con la cabeza casi tocando el suelo.'},
+  {n:'Flexiones pica con pies en silla', r:[4,10], c:'Pies sobre una silla y manos en el suelo, cadera alta. Cuanto más vertical quede el tronco, más difícil.'},
+  {n:'Subir por la pared', r:[2,6], c:'Desde plancha con los pies junto a la pared, sube los pies por la pared mientras acercas las manos, hasta quedar casi vertical. Baja igual. Cada subida cuenta 1.'},
+  {n:'Pino contra la pared', r:[15,45], t:true, c:'Sube por la pared hasta quedar vertical, con el pecho mirando a la pared. Brazos estirados y abdomen apretado.'},
+  {n:'Flexión de pino negativa', r:[2,6], c:'En pino contra la pared, baja lo más lento posible hasta apoyar la cabeza con cuidado. Baja los pies y vuelve a subir.'}]},
+ {id:'pull', name:'Espalda y bíceps', start:1, day:'B', vars:[
+  {n:'Remo isométrico con toalla', r:[15,40], t:true, c:'Sentado con las piernas estiradas y una toalla rodeando los pies. Tira fuerte de la toalla hacia el ombligo con la espalda recta, juntando los omóplatos.'},
+  {n:'Remo en el marco de la puerta', r:[6,15], side:true, c:'Agarra el marco con una mano, pies cerca de la base. Inclínate hacia atrás con el cuerpo recto y tira hasta acercar el pecho al marco. Cuenta por brazo.'},
+  {n:'Remo en el marco, más inclinado', r:[6,15], side:true, c:'Igual, pero con los pies más pegados al marco para quedar más inclinado. Cuenta por brazo.'},
+  {n:'Remo con toalla en la puerta', r:[6,15], c:'Usa una puerta que se abra hacia el otro lado, así al tirar la cierras más. Pasa una toalla por el pomo, agarra los extremos, inclínate atrás con el cuerpo recto y tira. Comprueba antes que el pomo es firme.'},
+  {n:'Remo con toalla, más tumbado', r:[6,15], c:'Igual, pero con los pies más cerca de la puerta para que el cuerpo quede más horizontal.'},
+  {n:'Remo con toalla a una mano', r:[4,10], side:true, c:'Remo con toalla agarrando con una sola mano. No dejes que el cuerpo gire. Cuenta por brazo.'}]},
+ {id:'post', name:'Espalda y glúteo', start:1, day:'B', vars:[
   {n:'Puente de glúteo', r:[10,20], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados cerca del culo. Empuja con los talones y sube la cadera hasta que hombros, cadera y rodillas queden en línea recta. Baja despacio.'},
   {n:'Puente con pausa', r:[8,15], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados. Sube la cadera hasta que hombros, cadera y rodillas formen una línea recta, aguanta ahí 3 s apretando los glúteos y baja despacio. Los hombros y la cabeza no se despegan del suelo.'},
   {n:'Superman con pausa', r:[8,15], c:'Boca abajo, levanta brazos y piernas a la vez. Aguanta 2 s arriba.'},
@@ -212,7 +243,7 @@ const FAMS = [
   {n:'Nadador', r:[10,20], c:'Boca abajo, brazos y piernas en el aire. Alterna brazo y pierna contrarios. Cada lado cuenta 1.'},
   {n:'Y-T-W en el suelo', r:[5,10], c:'Boca abajo, pecho levantado. Forma Y, T y W con los brazos, aguantando 2 s en cada una. 1 ronda = 1 rep.'},
   {n:'Puente a una pierna con pausa', r:[6,12], side:true, c:'Puente a una pierna: sube la cadera hasta la línea recta, aguanta 3 s arriba y baja despacio. Cuenta por pierna.'}]},
- {id:'core', name:'Core', start:1, vars:[
+ {id:'core', name:'Core', start:1, day:'A', vars:[
   {n:'Plancha de rodillas', r:[15,45], t:true, c:'Antebrazos y rodillas en el suelo. Cuerpo recto, aprieta abdomen y glúteos.'},
   {n:'Plancha', r:[20,60], t:true, c:'Antebrazos y puntas de los pies. Ni cadera caída ni culo en pompa.'},
   {n:'Plancha lateral', r:[15,45], t:true, side:true, c:'Sobre un antebrazo, cuerpo de lado en línea recta. Tiempo por lado.'},
@@ -244,6 +275,8 @@ function ik(A,B,l,hint){
 }
 const ln=(a,b,o=1)=>`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"${o<1?` opacity="${o}"`:''}/>`;
 const limb=(A,B,l,h,o)=>{const r=ik(A,B,l,h); return ln(A,r.j,o)+ln(r.j,r.e,o)};
+function bowPath(P,S,b){ const mx=(P[0]+S[0])/2, my=(P[1]+S[1])/2, dx=S[0]-P[0], dy=S[1]-P[1], d=Math.hypot(dx,dy)||1;
+  return `<path fill="none" d="M${P[0]} ${P[1]}Q${(mx-dy/d*b*2).toFixed(1)} ${(my+dx/d*b*2).toFixed(1)} ${S[0]} ${S[1]}"/>` }
 function drawFrame(f){
   let s='';
   if (f.front){
@@ -259,7 +292,8 @@ function drawFrame(f){
     const kh=f.kh||[1,0], eh=f.eh||[0,1];
     if (f.F2) s+=limb(f.P,f.F2,f.ll||LL,f.kh2||kh,.45);
     if (f.H2) s+=limb(f.S,f.H2,LA,f.eh2||eh,.45);
-    s+=ln(f.P,f.S)+limb(f.P,f.F1,f.ll||LL,kh)+limb(f.S,f.H1,LA,eh);
+    s+=(f.bow?bowPath(f.P,f.S,f.bow):ln(f.P,f.S))+limb(f.P,f.F1,f.ll||LL,kh)+limb(f.S,f.H1,LA,eh);
+    (f.lines||[]).forEach(l=>s+=`<line class="towel" x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}"/>`);
     const dx=f.S[0]-f.P[0], dy=f.S[1]-f.P[1], d=Math.hypot(dx,dy)||1;
     const hd=f.head||[f.S[0]+dx/d*12, f.S[1]+dy/d*12];
     s+=`<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="7.5" stroke="none"/>`;
@@ -271,7 +305,11 @@ const PROPS={
   wall:'<line x1="152" y1="0" x2="152" y2="112"/>',
   table:'<path d="M146 74H196M152 74V112M190 74V112"/>',
   chair:'<path d="M58 84H92M60 84V112M90 84V112M60 84V44"/>',
-  wallR:'<line x1="146" y1="0" x2="146" y2="112"/>'
+  wallR:'<line x1="146" y1="0" x2="146" y2="112"/>',
+  chairL:'<path d="M38 84H72M40 84V112M70 84V112M40 84V50"/>',
+  frame:'<path d="M150 -12V112M158 -12V112"/>',
+  door:'<path d="M152 -12V112"/><circle cx="152" cy="60" r="3"/>',
+  jamb:'<path d="M62 -12V112M56 -12V112"/>'
 };
 const FIG={
  push:[
@@ -330,8 +368,46 @@ const FIG={
   {b:{S:[100,72],P:[98,104],F1:[122,104],kh:[0,-1],H1:[99,G],eh:[1,0]}, txt:'culo despegado'}
  ]
 };
-function figSVG(fid,lvl){
-  const d=FIG[fid]?.[lvl]; if(!d) return '';
+const pikeTop={S:[110,88],P:[80,64],F1:[66,G],H1:[140,G],eh:[1,0]};
+const pikeLow={S:[118,89],P:[90,63],F1:[66,G],H1:[140,G],eh:[-1,0],head:[127,97]};
+const hs={S:[135,74],P:[140,37],F1:[144,-11],H1:[134,G],eh:[-1,0],head:[133,85]};
+const FIG_NEW={
+ shoulder:[
+  {b:{...pikeTop,H2:[106,84],eh2:[1,1]}, txt:'toca el hombro contrario'},
+  {a:pikeTop, b:pikeLow},
+  {a:pikeTop, b:pikeLow, txt:'2 s abajo'},
+  {p:'chairL', a:{S:[115.5,78.6],P:[93,48],F1:[62,84],H1:[140,G],eh:[1,0]}, b:{S:[122,88],P:[102,56],F1:[62,84],H1:[140,G],eh:[-1,0],head:[128,98]}},
+  {p:'wallR', a:{...body([146,G],-154),H1:[66,G],eh:[0,-1]}, b:{S:[127,73],P:[138,38],F1:[146,10],H1:[126,G],kh:[-1,0],eh:[-1,0],head:[123,84]}},
+  {p:'wallR', b:hs, txt:'pecho hacia la pared'},
+  {p:'wallR', a:hs, b:{S:[134,96],P:[140,60],F1:[145,11],H1:[130,G],eh:[-1,0],head:[132,107]}, txt:'baja lento'}
+ ],
+ pull:[
+  {b:{S:[76,70],P:[80,108],F1:[132,110],H1:[104,86],eh:[-1,0],lines:[[104,86,134,104]]}, txt:'tira de la toalla'},
+  {p:'frame', a:{...body([136,G],-105),H1:[150,40],eh:[-1,1]}, b:{...body([136,G],-95),H1:[150,40],eh:[-1,1]}, txt:'una mano'},
+  {p:'frame', a:{...body([146,G],-112),H1:[150,44],eh:[-1,1]}, b:{...body([146,G],-100),H1:[150,44],eh:[-1,1]}, txt:'pies más cerca'},
+  {p:'door', a:{...body([132,G],-112),H1:[133,49],eh:[-1,1],lines:[[133,49,152,60]]}, b:{...body([132,G],-98),H1:[130,42],eh:[-1,1],lines:[[130,42,152,60]]}, txt:'toalla en el pomo'},
+  {p:'door', a:{...body([140,G],-135),H1:[115,60],eh:[-1,1],lines:[[115,60,152,64]]}, b:{...body([140,G],-120),H1:[120,48],eh:[-1,1],lines:[[120,48,152,64]]}, txt:'cuerpo más tumbado'},
+  {p:'door', a:{...body([132,G],-112),H1:[133,49],eh:[-1,1],lines:[[133,49,152,60]]}, b:{...body([132,G],-98),H1:[130,42],eh:[-1,1],H2:[118,70],lines:[[130,42,152,60]]}, txt:'una mano'}
+ ]
+};
+const STR_FIG={
+ circles:{a:{front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[66,-8],HR:[134,-8]}, b:{front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[49,24],HR:[151,24]}, txt:'círculos amplios'},
+ catcow:{a:{S:[130,73],P:[92,87],F1:[67,110],H1:[130,G],kh:[0,1],bow:-10,head:[138,86]}, b:{S:[130,73],P:[92,87],F1:[67,110],H1:[130,G],kh:[0,1],bow:7,head:[142,62]}},
+ thoracic:{b:{S:[130,73],P:[92,87],F1:[67,110],H1:[130,G],kh:[0,1],H2:[132,32],eh2:[1,0],head:[141,80]}, txt:'abre el brazo hacia arriba'},
+ chest:{p:'jamb', b:{S:[104,26],P:[102,62],F1:[124,G],F2:[88,G],H1:[66,26],eh:[0,-1],kh:[1,-1]}, txt:'brazo en el marco'},
+ cross:{b:{front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HR:[80,30],ehR:[0,1],HL:[102,34],ehL:[0,1]}, txt:'brazo cruzado'},
+ triceps:{b:{front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HR:[98,10],ehR:[1,-1],HL:[114,-2],ehL:[-1,-1],head:[100,11]}, txt:'codo detrás de la cabeza'},
+ hipflex:{b:{S:[100,44],P:[98,82],F1:[130,G],kh:[1,-1],F2:[60,110],kh2:[0,1],H1:[100,80],H2:[96,80]}, txt:'cadera adelante'},
+ quad:{b:{S:[100,24],P:[100,62],F1:[101,G],F2:[86,58],kh2:[0,1],H2:[86,58],eh2:[-1,0],H1:[112,58]}, txt:'talón al culo'},
+ ham:{b:{S:[109,85],P:[80,108],F1:[130,110],H1:[140,104],eh:[0,-1],head:[118,77]}, txt:'espalda recta'},
+ fig4:{z:1.4,cx:90,b:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],kh:[0,-1],F2:[110,82],kh2:[1,0],H1:[100,90],eh:[0,-1],head:[42,106]}, txt:'tobillo sobre la rodilla'},
+ cobra:{b:{S:[126,82],P:[92,108],F1:[42,110],H1:[130,G],eh:[-1,0]}, txt:'cadera en el suelo'},
+ child:{b:{S:[116,104],P:[80,98],F1:[76,110],kh:[1,1],H1:[154,110],eh:[0,-1],head:[128,106]}, txt:'brazos estirados'}
+};
+Object.assign(FIG,FIG_NEW);
+function figSVG(fid,lvl){ return figDef(FIG[fid]?.[lvl]) }
+function figDef(d){
+  if(!d) return '';
   let s='';
   if (d.a) s+=`<g class="${d.b?'fig ghost':'fig'}">${drawFrame(d.a)}</g>`;
   (d.extra||[]).forEach(e=>s+=`<g class="fig">${drawFrame(e)}</g>`);
@@ -339,7 +415,7 @@ function figSVG(fid,lvl){
   if (d.arrow){ const [x1,y1,x2,y2]=d.arrow; s+=`<path class="arrow" d="M${x1} ${y1}L${x2} ${y2}M${x2-3} ${y2+4}L${x2} ${y2}L${x2+3} ${y2+4}"/>` }
   if (d.z){ const z=d.z, cx=d.cx||100; s=`<g transform="translate(${cx*(1-z)} ${G*(1-z)}) scale(${z})">${s}</g>` }
   s=`<g class="prop">${d.p?PROPS[d.p]:''}<line x1="4" y1="${G+1}" x2="196" y2="${G+1}"/></g>`+s;
-  if (d.txt) s+=`<text x="196" y="${-1}" text-anchor="end" class="fig-txt">${d.txt}</text>`;
+  if (d.txt){ const right=d.p==='jamb'||d.p==='chairL'||d.p==='chair'; s+=`<text x="${right?196:4}" y="-1" text-anchor="${right?'end':'start'}" class="fig-txt">${d.txt}</text>` }
   return `<svg class="figure" viewBox="0 -12 200 128" role="img" aria-hidden="true">${s}</svg>`;
 }
 
@@ -392,10 +468,10 @@ async function connect(){
 
 /* ---------- Utilidades de UI ---------- */
 const $ = id => document.getElementById(id);
-const views = ['home','welcome','test','session','summary'];
+const views = ['home','welcome','test','session','summary','stretch'];
 let current = 'home';
 function show(v){ current=v; views.forEach(x=>$('v-'+x).hidden = x!==v); window.scrollTo(0,0) }
-const busy = () => current==='test' || current==='session';
+const busy = () => current==='test' || current==='session' || current==='stretch';
 function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) }
 function fmtTarget(v,t){ return `${t}<small> ${unitOf(v)}</small>` }
 
@@ -444,9 +520,24 @@ function weekCount(){
   const now=new Date(); const day=(now.getDay()+6)%7; const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate()-day);
   return S.history.filter(h=>new Date(h.d)>=monday).length;
 }
+let dayPick=null;
+function nextDay(){ const h=S.history[S.history.length-1]; return h&&h.day==='A'?'B':'A' }
+function selDay(){ return dayPick||nextDay() }
+const dayFams = d => FAMS.filter(f=>f.day.includes(d));
 function renderHome(){
   const wc=weekCount(); $('week-chip').textContent = wc===1 ? '1 sesión esta semana' : `${wc} sesiones esta semana`;
-  $('plan').innerHTML = FAMS.map((f,i)=>{
+  const missing=FAMS.filter(f=>!S.fam[f.id]);
+  $('start-session').hidden = missing.length>0;
+  if (missing.length){
+    $('plan').innerHTML=`<div class="label">Ejercicios nuevos</div><h3>${missing.map(f=>f.name).join(' y ')}</h3>
+      <p class="cue">Antes de seguir, haz una prueba corta de estos grupos para saber en qué peldaño empiezas. Unos 3 minutos.</p>
+      <button class="btn" id="test-new">Hacer la prueba</button>`;
+    $('test-new').onclick=()=>startTest(missing.map(f=>f.id));
+  } else {
+  const day=selDay(), nd=nextDay();
+  $('plan').innerHTML = `<div class="row" style="justify-content:space-between"><div class="row">
+      <button class="chip ${day==='A'?'on':''}" data-day="A">Día A</button><button class="chip ${day==='B'?'on':''}" data-day="B">Día B</button></div>
+      <span class="label">${day===nd?'Te toca hoy':'Hoy toca el '+nd}</span></div><hr class="divider">` + dayFams(day).map((f,i)=>{
     const st=S.fam[f.id], v=f.vars[st.lvl];
     const bars=f.vars.map((_,k)=>`<i class="${k<st.lvl?'done':k===st.lvl?'cur':''}" style="height:${40+60*k/(f.vars.length-1)}%"></i>`).join('');
     return `${i?'<hr class="divider">':''}<div class="ex">
@@ -459,6 +550,8 @@ function renderHome(){
         ${st.lvl<f.vars.length-1?`<button class="link" data-adj="${f.id}" data-d="1">Más difícil</button>`:''}
       </div></div>`;
   }).join('');
+  $('plan').querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{ dayPick=b.dataset.day; renderHome() });
+  }
   $('plan').querySelectorAll('[data-adj]').forEach(b=>b.onclick=()=>{
     const f=famById(b.dataset.adj), st=S.fam[f.id]; st.lvl=Math.min(f.vars.length-1,Math.max(0,st.lvl+ +b.dataset.d));
     st.target=f.vars[st.lvl].r[0]; st.fails=0; st.streak=0; save(); renderHome();
@@ -489,14 +582,14 @@ $('start-test').onclick=()=>startTest();
 
 /* ---------- Prueba inicial ---------- */
 let T=null;
-const tStep = stepper($('t-val'),$('t-minus'),$('t-plus'),()=>T?stepOf(famById(FAMS[T.fi].id).vars[T.lvl]):1);
+const tStep = stepper($('t-val'),$('t-minus'),$('t-plus'),()=>T?stepOf(famById(T.ids[T.fi]).vars[T.lvl]):1);
 const tWatch = makeStopwatch($('t-clock'),$('t-timer-btn'),s=>tStep.set(s));
 $('t-timer-btn').onclick=()=>tWatch.toggle();
-function startTest(){ unlockAudio(); T={fi:0, lvl:FAMS[0].start, tried:new Set(), placed:{}}; keepAwake(true); show('test'); renderTest() }
+function startTest(ids=FAMS.map(f=>f.id)){ unlockAudio(); T={ids, fi:0, lvl:famById(ids[0]).start, tried:new Set(), placed:{}}; keepAwake(true); show('test'); renderTest() }
 function renderTest(){
-  const f=FAMS[T.fi], v=f.vars[T.lvl];
-  $('t-step').textContent=`Prueba ${T.fi+1} de ${FAMS.length}`;
-  $('t-bar').style.width=(T.fi/FAMS.length*100)+'%';
+  const f=famById(T.ids[T.fi]), v=f.vars[T.lvl];
+  $('t-step').textContent=`Prueba ${T.fi+1} de ${T.ids.length}`;
+  $('t-bar').style.width=(T.fi/T.ids.length*100)+'%';
   $('t-fig').innerHTML=figSVG(f.id,T.lvl);
   $('t-fam').textContent=f.name; $('t-name').textContent=v.n; $('t-cue').textContent=v.c;
   $('t-instr').innerHTML = v.t
@@ -506,17 +599,17 @@ function renderTest(){
 }
 $('t-ok').onclick=()=>{
   tWatch.stop();
-  const f=FAMS[T.fi], v=f.vars[T.lvl], r=tStep.get(), [mn,mx]=v.r, step=stepOf(v);
+  const f=famById(T.ids[T.fi]), v=f.vars[T.lvl], r=tStep.get(), [mn,mx]=v.r, step=stepOf(v);
   T.tried.add(T.lvl);
   if (r<mn && T.lvl>0 && !T.tried.has(T.lvl-1)){ T.lvl--; testRest(`Ahora probarás uno más fácil: ${f.vars[T.lvl].n}.`); return }
   if (r>Math.round(mx*1.2) && T.lvl<f.vars.length-1 && !T.tried.has(T.lvl+1)){ T.lvl++; testRest(`Muy bien. Ahora probarás uno más difícil: ${f.vars[T.lvl].n}.`); return }
   let target = r<mn ? Math.max(step, Math.round(r*0.8/step)*step) : Math.max(mn, Math.min(mx, Math.round(r*0.7/step)*step));
   T.placed[f.id]={lvl:T.lvl, target, fails:0, streak:0};
   T.fi++;
-  if (T.fi>=FAMS.length){
-    S.fam=T.placed; S.placed=true; save(); T=null; keepAwake(false); show('home'); renderHome(); return;
+  if (T.fi>=T.ids.length){
+    Object.assign(S.fam,T.placed); S.placed=true; save(); T=null; keepAwake(false); show('home'); renderHome(); return;
   }
-  T.lvl=FAMS[T.fi].start; T.tried=new Set(); renderTest();
+  T.lvl=famById(T.ids[T.fi]).start; T.tried=new Set(); renderTest();
 };
 let trIv=null;
 function testRest(msg){
@@ -539,7 +632,7 @@ $('s-timer-btn').onclick=()=>sWatch.toggle();
 function curVar(){ const it=X.items[X.ei]; return famById(it.f).vars[it.l] }
 $('start-session').onclick=()=>{
   unlockAudio(); keepAwake(true);
-  X={round:0, ei:0, items:FAMS.map(f=>({f:f.id, l:S.fam[f.id].lvl, target:S.fam[f.id].target, sets:[]}))};
+  X={round:0, ei:0, day:selDay(), items:dayFams(selDay()).map(f=>({f:f.id, l:S.fam[f.id].lvl, target:S.fam[f.id].target, sets:[]}))};
   show('session'); renderWork();
 };
 function totalSets(){ return ROUNDS*X.items.length }
@@ -609,7 +702,7 @@ function levelUp(fid){
 function finishSession(){
   clearInterval(restIv); keepAwake(false); beep(2);
   const res = X.items.map(it=>({it, p:progress(it)}));
-  const entry={d:new Date().toISOString(), x:X.items.map((it,i)=>({f:it.f,l:it.l,t:it.target,s:it.sets,o:res[i].p.k}))};
+  const entry={d:new Date().toISOString(), day:X.day, x:X.items.map((it,i)=>({f:it.f,l:it.l,t:it.target,s:it.sets,o:res[i].p.k}))};
   S.history.push(entry);
   save();
   const asks=res.filter(r=>r.p.k==='ask').length;
@@ -637,8 +730,64 @@ function finishSession(){
     }
     save();
   });
-  X=null; show('summary');
+  X=null; dayPick=null;
+  startStretch('post', ()=>show('summary'));
 }
+$('start-mob').onclick=()=>startStretch('mob', route);
+
+/* ---------- Estiramientos ---------- */
+const STRETCHES={
+ chest:{n:'Pecho en el marco de la puerta', side:true, c:'Apoya el brazo en el marco a la altura del hombro y da un paso adelante hasta notar el estiramiento en el pecho.'},
+ cross:{n:'Hombro cruzado', side:true, c:'Cruza un brazo estirado por delante del pecho y acércalo con la otra mano, sujetando por encima del codo.'},
+ triceps:{n:'Tríceps', side:true, c:'Lleva una mano a la espalda por detrás de la cabeza y empuja suave el codo con la otra mano.'},
+ quad:{n:'Cuádriceps de pie', side:true, c:'Sobre una pierna, agarra el otro pie y lleva el talón al culo con las rodillas juntas. Apóyate en la pared si lo necesitas.'},
+ ham:{n:'Isquios sentado', c:'Sentado con las piernas estiradas, inclínate hacia los pies con la espalda recta. Sin rebotes.'},
+ child:{n:'Postura del niño', c:'De rodillas, siéntate sobre los talones y estira los brazos hacia delante con la frente cerca del suelo. Respira hondo.'},
+ circles:{n:'Círculos de brazos', c:'Brazos estirados a los lados. Haz círculos amplios hacia delante y, a mitad de tiempo, hacia atrás.'},
+ catcow:{n:'Gato-vaca', c:'A cuatro patas. Alterna arquear la espalda hacia arriba mirando al ombligo y hundirla mirando al frente. Despacio, siguiendo la respiración.'},
+ thoracic:{n:'Rotación de espalda', side:true, c:'A cuatro patas, lleva una mano a la nuca y gira abriendo el codo hacia el techo. Sigue el codo con la mirada.'},
+ hipflex:{n:'Flexor de cadera', side:true, c:'Rodilla de atrás en el suelo y pie de delante adelantado. Empuja la cadera hacia delante con el tronco recto.'},
+ fig4:{n:'Glúteo tumbado', side:true, c:'Boca arriba, cruza un tobillo sobre la rodilla contraria y acerca esa pierna al pecho.'},
+ cobra:{n:'Cobra', c:'Boca abajo, manos bajo los hombros. Estira los brazos y levanta el pecho dejando la cadera en el suelo.'}
+};
+const ROUTINES={
+ post:{title:'Estiramientos', list:[['chest',30],['cross',30],['triceps',30],['quad',30],['ham',30],['child',30]]},
+ mob:{title:'Movilidad', list:[['circles',45],['catcow',60],['thoracic',60],['chest',60],['cross',60],['triceps',60],['hipflex',60],['quad',60],['ham',60],['fig4',60],['cobra',45],['child',60]]}
+};
+let R=null, stIv=null;
+function startStretch(kind, onDone){
+  unlockAudio(); keepAwake(true);
+  R={...ROUTINES[kind], i:-1, onDone, paused:false};
+  show('stretch'); $('st-title').textContent=R.title; nextStretch();
+}
+function nextStretch(){
+  R.i++;
+  if (R.i>=R.list.length){ endStretch(); return }
+  const [id,sec]=R.list[R.i], st=STRETCHES[id];
+  R.sec=sec; R.end=Date.now()+sec*1000; R.switched=false; R.paused=false;
+  $('st-step').textContent=`${R.i+1} de ${R.list.length}`;
+  $('st-bar').style.width=(R.i/R.list.length*100)+'%';
+  $('st-fig').innerHTML=figDef(STR_FIG[id]);
+  $('st-name').textContent=st.n; $('st-cue').textContent=st.c;
+  $('st-side').textContent=st.side?'Primer lado':''; $('st-pause').textContent='Pausa';
+  clearInterval(stIv); stIv=setInterval(tickStretch,250); tickStretch();
+}
+function tickStretch(){
+  if (!R || R.paused) return;
+  const st=STRETCHES[R.list[R.i][0]], left=Math.max(0,Math.ceil((R.end-Date.now())/1000));
+  $('st-clock').textContent=left;
+  if (st.side && !R.switched && left<=R.sec/2){ R.switched=true; beep(1); $('st-side').textContent='Cambia de lado' }
+  if (left<=0){ beep(2); nextStretch() }
+}
+function endStretch(){ clearInterval(stIv); stIv=null; keepAwake(false); const d=R.onDone; R=null; d() }
+$('st-pause').onclick=()=>{
+  if (!R) return;
+  if (R.paused){ R.paused=false; R.end=Date.now()+R.left; $('st-pause').textContent='Pausa' }
+  else { R.paused=true; R.left=R.end-Date.now(); $('st-pause').textContent='Seguir' }
+};
+$('st-skip').onclick=()=>{ if (R) nextStretch() };
+$('st-end').onclick=()=>{ if (R) endStretch() };
+
 $('sum-ok').onclick=()=>route();
 
 /* ---------- Arranque ---------- */
