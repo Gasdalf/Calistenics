@@ -74,6 +74,7 @@ details[open]>summary::after{content:" –"}
 .figure{display:block;width:100%;max-height:190px;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;fill:var(--ink)}
 .figure .prop{stroke:var(--muted);stroke-width:3;fill:none;opacity:.6}
 .figure .ghost{opacity:.28}
+.figure .weight{stroke:var(--warm);stroke-width:4;fill:none}
 .figure .towel{stroke:var(--warm);stroke-width:3}
 .figure line,.figure path{vector-effect:non-scaling-stroke}
 .figure .arrow{stroke:var(--accent);stroke-width:3;fill:none}
@@ -109,7 +110,7 @@ details[open]>summary::after{content:" –"}
           <div class="row" id="rest-opts" style="margin-top:6px"></div></div>
         <div><div class="label">Cómo sube la dificultad</div>
           <p class="cue" style="margin-top:4px">Cuando cumples el objetivo en las 3 series durante 5 sesiones seguidas, al terminar te pregunta qué tal fue. Si contestas Fácil o Justo, sube 1 rep (o 5 s); si contestas Al límite, se mantiene y te vuelve a preguntar la próxima vez. Al pasar del tope de un ejercicio, pasas a la variante siguiente. Una sesión sin cumplir pone el contador a 0, y si dos sesiones seguidas te quedas por debajo del 80 %, baja.</p>
-          <p class="cue" style="margin-top:6px">Los días A y B se alternan solos. A: empuje, piernas, hombros y core. B: empuje, piernas, espalda y bíceps, y glúteo. Al final de cada sesión hay 3 minutos de estiramientos.</p></div>
+          <p class="cue" style="margin-top:6px">Los días A y B se alternan solos. A: empuje, piernas, hombros y core. B: empuje, piernas, espalda y bíceps (remo con mancuernas), y glúteo. Al final de cada sesión hay 3 minutos de estiramientos.</p></div>
         <div class="row"><button class="link" id="retest">Repetir prueba inicial</button>
           <button class="link danger" id="reset">Borrar todo el progreso</button></div>
       </div>
@@ -145,6 +146,9 @@ details[open]>summary::after{content:" –"}
       <div class="big" id="t-clock">0<small> s</small></div>
       <button class="btn ghost" id="t-timer-btn">Empezar a contar</button>
     </div>
+    <div id="t-kgbox" hidden><div class="label" style="text-align:center;margin-bottom:6px">Peso por mancuerna</div>
+      <div class="stepper"><button id="t-kgm" aria-label="Menos peso">−</button><output id="t-kg">10</output><button id="t-kgp" aria-label="Más peso">+</button></div>
+      <div class="label" style="text-align:center;margin:12px 0 6px">Repeticiones</div></div>
     <div class="stepper"><button id="t-minus" aria-label="Menos">−</button><output id="t-val">0</output><button id="t-plus" aria-label="Más">+</button></div>
     <button class="btn" id="t-ok">Guardar resultado</button>
     </div>
@@ -161,6 +165,7 @@ details[open]>summary::after{content:" –"}
       <div><div class="label" id="s-fam"></div><h2 id="s-name"></h2></div>
       <p class="cue" id="s-cue"></p>
       <div class="big" id="s-target"></div>
+      <p id="s-kg" class="label" style="text-align:center;font-size:1rem;color:var(--warm)" hidden></p>
       <div id="s-timer" class="stack" hidden>
         <div class="big" id="s-clock">0<small> s</small></div>
         <button class="btn ghost" id="s-timer-btn">Empezar a contar</button>
@@ -228,13 +233,10 @@ const FAMS = [
   {n:'Subir por la pared', r:[2,6], c:'Desde plancha con los pies junto a la pared, sube los pies por la pared mientras acercas las manos, hasta quedar casi vertical. Baja igual. Cada subida cuenta 1.'},
   {n:'Pino contra la pared', r:[15,45], t:true, c:'Sube por la pared hasta quedar vertical, con el pecho mirando a la pared. Brazos estirados y abdomen apretado.'},
   {n:'Flexión de pino negativa', r:[2,6], c:'En pino contra la pared, baja lo más lento posible hasta apoyar la cabeza con cuidado. Baja los pies y vuelve a subir.'}]},
- {id:'pull', name:'Espalda y bíceps', start:1, day:'B', vars:[
-  {n:'Remo isométrico con toalla', r:[15,40], t:true, c:'Sentado con las piernas estiradas y una toalla rodeando los pies. Tira fuerte de la toalla hacia el ombligo con la espalda recta, juntando los omóplatos.'},
-  {n:'Remo en el marco de la puerta', r:[6,15], side:true, c:'Agarra el marco con una mano, pies cerca de la base. Inclínate hacia atrás con el cuerpo recto y tira hasta acercar el pecho al marco. Cuenta por brazo.'},
-  {n:'Remo en el marco, más inclinado', r:[6,15], side:true, c:'Igual, pero con los pies más pegados al marco para quedar más inclinado. Cuenta por brazo.'},
-  {n:'Remo con toalla en la puerta', r:[6,15], c:'Usa una puerta que se abra hacia el otro lado, así al tirar la cierras más. Pasa una toalla por el pomo, agarra los extremos, inclínate atrás con el cuerpo recto y tira. Comprueba antes que el pomo es firme.'},
-  {n:'Remo con toalla, más tumbado', r:[6,15], c:'Igual, pero con los pies más cerca de la puerta para que el cuerpo quede más horizontal.'},
-  {n:'Remo con toalla a una mano', r:[4,10], side:true, c:'Remo con toalla agarrando con una sola mano. No dejes que el cuerpo gire. Cuenta por brazo.'}]},
+ {id:'pull', name:'Espalda y bíceps', start:0, day:'B', maxKg:25, vars:[
+  {n:'Remo con mancuerna a una mano', r:[8,12], side:true, w:true, c:'Una mano apoyada en una silla y los pies separados, tronco inclinado con la espalda recta. Tira de la mancuerna hacia la cadera con el codo pegado al cuerpo y baja controlado. Cuenta por brazo.'},
+  {n:'Remo inclinado con dos mancuernas', r:[8,12], w:true, c:'De pie, rodillas algo dobladas y tronco inclinado unos 45° con la espalda recta. Tira de las dos mancuernas hacia la cintura juntando los omóplatos.'},
+  {n:'Remo inclinado con pausa', r:[6,10], w:true, c:'Como el remo inclinado, aguantando 2 s arriba con los omóplatos juntos y bajando en 3 s.'}]},
  {id:'post', name:'Espalda y glúteo', start:1, day:'B', vars:[
   {n:'Puente de glúteo', r:[10,20], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados cerca del culo. Empuja con los talones y sube la cadera hasta que hombros, cadera y rodillas queden en línea recta. Baja despacio.'},
   {n:'Puente con pausa', r:[8,15], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados. Sube la cadera hasta que hombros, cadera y rodillas formen una línea recta, aguanta ahí 3 s apretando los glúteos y baja despacio. Los hombros y la cabeza no se despegan del suelo.'},
@@ -257,6 +259,9 @@ const NEED = 5; // sesiones seguidas cumpliendo antes de preguntar si subir
 const stepOf = v => v.t ? 5 : 1;
 const unitOf = v => v.t ? (v.side ? 's/lado' : 's') : (v.side ? 'reps/lado' : 'reps');
 const famById = id => FAMS.find(f=>f.id===id);
+const KG = 2.5;
+const fmtKg = k => String(k).replace('.',',')+' kg';
+const roundKg = k => Math.max(KG, Math.round(k/KG)*KG);
 
 /* ---------- Dibujos: muñeco con postura inicial (clara) y final (oscura) ---------- */
 const G=112, LA=[20,19], LL=[25,25];
@@ -293,6 +298,7 @@ function drawFrame(f){
     if (f.F2) s+=limb(f.P,f.F2,f.ll||LL,f.kh2||kh,.45);
     if (f.H2) s+=limb(f.S,f.H2,LA,f.eh2||eh,.45);
     s+=(f.bow?bowPath(f.P,f.S,f.bow):ln(f.P,f.S))+limb(f.P,f.F1,f.ll||LL,kh)+limb(f.S,f.H1,LA,eh);
+    (f.db||[]).forEach(q=>s+=`<circle class="weight" cx="${q[0]}" cy="${q[1]}" r="8"/>`);
     (f.lines||[]).forEach(l=>s+=`<line class="towel" x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}"/>`);
     const dx=f.S[0]-f.P[0], dy=f.S[1]-f.P[1], d=Math.hypot(dx,dy)||1;
     const hd=f.head||[f.S[0]+dx/d*12, f.S[1]+dy/d*12];
@@ -306,6 +312,7 @@ const PROPS={
   table:'<path d="M146 74H196M152 74V112M190 74V112"/>',
   chair:'<path d="M58 84H92M60 84V112M90 84V112M60 84V44"/>',
   wallR:'<line x1="146" y1="0" x2="146" y2="112"/>',
+  chairR:'<path d="M118 84H150M120 84V112M148 84V112M148 84V50"/>',
   chairL:'<path d="M38 84H72M40 84V112M70 84V112M40 84V50"/>',
   frame:'<path d="M150 -12V112M158 -12V112"/>',
   door:'<path d="M152 -12V112"/><circle cx="152" cy="60" r="3"/>',
@@ -382,12 +389,9 @@ const FIG_NEW={
   {p:'wallR', a:hs, b:{S:[134,96],P:[140,60],F1:[145,11],H1:[130,G],eh:[-1,0],head:[132,107]}, txt:'baja lento'}
  ],
  pull:[
-  {b:{S:[76,70],P:[80,108],F1:[132,110],H1:[104,86],eh:[-1,0],lines:[[104,86,134,104]]}, txt:'tira de la toalla'},
-  {p:'frame', a:{...body([136,G],-105),H1:[150,40],eh:[-1,1]}, b:{...body([136,G],-95),H1:[150,40],eh:[-1,1]}, txt:'una mano'},
-  {p:'frame', a:{...body([146,G],-112),H1:[150,44],eh:[-1,1]}, b:{...body([146,G],-100),H1:[150,44],eh:[-1,1]}, txt:'pies más cerca'},
-  {p:'door', a:{...body([132,G],-112),H1:[133,49],eh:[-1,1],lines:[[133,49,152,60]]}, b:{...body([132,G],-98),H1:[130,42],eh:[-1,1],lines:[[130,42,152,60]]}, txt:'toalla en el pomo'},
-  {p:'door', a:{...body([140,G],-135),H1:[115,60],eh:[-1,1],lines:[[115,60,152,64]]}, b:{...body([140,G],-120),H1:[120,48],eh:[-1,1],lines:[[120,48,152,64]]}, txt:'cuerpo más tumbado'},
-  {p:'door', a:{...body([132,G],-112),H1:[133,49],eh:[-1,1],lines:[[133,49,152,60]]}, b:{...body([132,G],-98),H1:[130,42],eh:[-1,1],H2:[118,70],lines:[[130,42,152,60]]}, txt:'una mano'}
+  {p:'chairR', a:{S:[112,56],P:[76,64],F1:[84,G],F2:[60,G],H1:[114,94],db:[[114,94]],H2:[130,84],eh2:[1,0]}, b:{S:[112,56],P:[76,64],F1:[84,G],F2:[60,G],H1:[98,72],eh:[-1,-1],db:[[98,72]],H2:[130,84],eh2:[1,0]}},
+  {a:{S:[110,42],P:[80,64],F1:[84,G],F2:[78,G],H1:[112,81],db:[[112,81]]}, b:{S:[110,42],P:[80,64],F1:[84,G],F2:[78,G],H1:[96,62],eh:[-1,-1],db:[[96,62]]}},
+  {a:{S:[110,42],P:[80,64],F1:[84,G],F2:[78,G],H1:[112,81],db:[[112,81]]}, b:{S:[110,42],P:[80,64],F1:[84,G],F2:[78,G],H1:[96,62],eh:[-1,-1],db:[[96,62]]}, txt:'2 s arriba'}
  ]
 };
 const STR_FIG={
@@ -542,14 +546,16 @@ function renderHome(){
     const bars=f.vars.map((_,k)=>`<i class="${k<st.lvl?'done':k===st.lvl?'cur':''}" style="height:${40+60*k/(f.vars.length-1)}%"></i>`).join('');
     return `${i?'<hr class="divider">':''}<div class="ex">
       <div><div class="label">${f.name} · peldaño ${st.lvl+1}/${f.vars.length} · ${Math.min(st.streak||0,NEED)}/${NEED} para subir</div><div class="name">${esc(v.n)}</div></div>
-      <div class="target">${ROUNDS}×${st.target}<span class="muted" style="font-size:.9rem;font-family:var(--body);font-weight:500"> ${unitOf(v)}</span></div>
+      <div class="target">${ROUNDS}×${st.target}<span class="muted" style="font-size:.9rem;font-family:var(--body);font-weight:500"> ${unitOf(v)}</span>${v.w?`<div style="font-size:1rem;color:var(--warm);text-align:right">${fmtKg(st.kg)}</div>`:''}</div>
       <div class="ladder" aria-hidden="true">${bars}</div>
       <details class="howto"><summary>Cómo se hace</summary><div class="fig-box">${figSVG(f.id,st.lvl)}</div><p class="cue" style="margin-top:6px">${esc(v.c)}</p></details>
       <div class="ex-actions">
         ${st.lvl>0?`<button class="link" data-adj="${f.id}" data-d="-1">Más fácil</button>`:''}
         ${st.lvl<f.vars.length-1?`<button class="link" data-adj="${f.id}" data-d="1">Más difícil</button>`:''}
+        ${v.w?`<button class="link" data-kg="${f.id}" data-d="-1">−2,5 kg</button><button class="link" data-kg="${f.id}" data-d="1">+2,5 kg</button>`:''}
       </div></div>`;
   }).join('');
+  $('plan').querySelectorAll('[data-kg]').forEach(b=>b.onclick=()=>{ const f=famById(b.dataset.kg), st=S.fam[f.id]; st.kg=Math.min(f.maxKg,roundKg(st.kg+ +b.dataset.d*KG)); st.streak=0; save(); renderHome() });
   $('plan').querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{ dayPick=b.dataset.day; renderHome() });
   }
   $('plan').querySelectorAll('[data-adj]').forEach(b=>b.onclick=()=>{
@@ -561,7 +567,7 @@ function renderHome(){
   const hs=S.history.slice(-15).reverse();
   $('hist').innerHTML = hs.length ? hs.map(h=>{
     const d=new Date(h.d).toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
-    const rows=h.x.map(x=>{const f=famById(x.f), v=f.vars[x.l]; return `${esc(v.n)}: ${x.s.join(' · ')} ${unitOf(v)}`}).join('<br>');
+    const rows=h.x.map(x=>{const f=famById(x.f), v=f.vars[x.l]; return `${esc(v.n)}: ${x.s.join(' · ')} ${unitOf(v)}${x.kg?' · '+fmtKg(x.kg):''}`}).join('<br>');
     return `<div class="label" style="padding-top:2px">${d}</div><div>${rows}</div>`;
   }).join('') : '<p class="muted">Aún no hay sesiones.</p>';
   $('hist').className = hs.length ? 'hist' : '';
@@ -583,6 +589,8 @@ $('start-test').onclick=()=>startTest();
 /* ---------- Prueba inicial ---------- */
 let T=null;
 const tStep = stepper($('t-val'),$('t-minus'),$('t-plus'),()=>T?stepOf(famById(T.ids[T.fi]).vars[T.lvl]):1);
+const tKg = (()=>{ let val=10; const api={get:()=>val, set(v){ val=Math.max(KG,Math.round(v/KG)*KG); $('t-kg').textContent=String(val).replace('.',',') }};
+  $('t-kgm').onclick=()=>api.set(val-KG); $('t-kgp').onclick=()=>api.set(val+KG); return api })();
 const tWatch = makeStopwatch($('t-clock'),$('t-timer-btn'),s=>tStep.set(s));
 $('t-timer-btn').onclick=()=>tWatch.toggle();
 function startTest(ids=FAMS.map(f=>f.id)){ unlockAudio(); T={ids, fi:0, lvl:famById(ids[0]).start, tried:new Set(), placed:{}}; keepAwake(true); show('test'); renderTest() }
@@ -595,12 +603,21 @@ function renderTest(){
   $('t-instr').innerHTML = v.t
     ? `Aguanta todo lo que puedas con buena postura${v.side?' (solo un lado)':''}. Usa el contador y apunta los segundos.`
     : `Haz todas las repeticiones que puedas con buena técnica${v.side?' (con una pierna o lado)':''}. Para cuando la técnica empiece a fallar.`;
+  $('t-kgbox').hidden=!v.w; if (v.w){ tKg.set(10); $('t-instr').innerHTML='Elige un peso con el que creas que puedes hacer unas 10-12 repeticiones. Haz todas las que puedas con buena técnica y apunta el peso y las repeticiones.' }
   $('t-timer').hidden=!v.t; tWatch.reset(); tStep.set(0);
 }
 $('t-ok').onclick=()=>{
   tWatch.stop();
   const f=famById(T.ids[T.fi]), v=f.vars[T.lvl], r=tStep.get(), [mn,mx]=v.r, step=stepOf(v);
   T.tried.add(T.lvl);
+  if (v.w){
+    let kg=tKg.get(), target;
+    if (r<mn){ kg=roundKg(kg-KG); target=mn } else if (r>mx+3){ kg=Math.min(f.maxKg,kg+KG); target=mn } else target=Math.max(mn,Math.min(mx,r-2));
+    T.placed[f.id]={lvl:T.lvl, target, kg, fails:0, streak:0};
+    T.fi++;
+    if (T.fi>=T.ids.length){ Object.assign(S.fam,T.placed); S.placed=true; save(); T=null; keepAwake(false); show('home'); renderHome(); return }
+    T.lvl=famById(T.ids[T.fi]).start; T.tried=new Set(); renderTest(); return;
+  }
   if (r<mn && T.lvl>0 && !T.tried.has(T.lvl-1)){ T.lvl--; testRest(`Ahora probarás uno más fácil: ${f.vars[T.lvl].n}.`); return }
   if (r>Math.round(mx*1.2) && T.lvl<f.vars.length-1 && !T.tried.has(T.lvl+1)){ T.lvl++; testRest(`Muy bien. Ahora probarás uno más difícil: ${f.vars[T.lvl].n}.`); return }
   let target = r<mn ? Math.max(step, Math.round(r*0.8/step)*step) : Math.max(mn, Math.min(mx, Math.round(r*0.7/step)*step));
@@ -632,7 +649,7 @@ $('s-timer-btn').onclick=()=>sWatch.toggle();
 function curVar(){ const it=X.items[X.ei]; return famById(it.f).vars[it.l] }
 $('start-session').onclick=()=>{
   unlockAudio(); keepAwake(true);
-  X={round:0, ei:0, day:selDay(), items:dayFams(selDay()).map(f=>({f:f.id, l:S.fam[f.id].lvl, target:S.fam[f.id].target, sets:[]}))};
+  X={round:0, ei:0, day:selDay(), items:dayFams(selDay()).map(f=>({f:f.id, l:S.fam[f.id].lvl, target:S.fam[f.id].target, kg:S.fam[f.id].kg, sets:[]}))};
   show('session'); renderWork();
 };
 function totalSets(){ return ROUNDS*X.items.length }
@@ -644,6 +661,7 @@ function renderWork(){
   $('s-fig').innerHTML=figSVG(f.id,it.l);
   $('s-fam').textContent=f.name; $('s-name').textContent=v.n; $('s-cue').textContent=v.c;
   $('s-target').innerHTML=fmtTarget(v,it.target);
+  $('s-kg').hidden=!v.w; if (v.w) $('s-kg').textContent=`con ${fmtKg(it.kg)} por mancuerna`;
   $('s-timer').hidden=!v.t; $('s-target').hidden=!!v.t;
   $('s-done-label').textContent = v.t ? 'Segundos aguantados' : '¿Cuántas hiciste?';
   sWatch.reset(); sStep.set(v.t?0:it.target);
@@ -661,7 +679,7 @@ function startRest(){
   $('s-work').hidden=true; $('s-rest').hidden=false;
   $('s-bar').style.width=(doneSets()/totalSets()*100)+'%';
   const it=X.items[X.ei], v=famById(it.f).vars[it.l];
-  $('r-next').textContent=`${v.n} · ${it.target} ${unitOf(v)}`;
+  $('r-next').textContent=`${v.n} · ${it.target} ${unitOf(v)}${v.w?' · '+fmtKg(it.kg):''}`;
   const end=Date.now()+S.rest*1000;
   const tick=()=>{ const left=Math.max(0,Math.ceil((end-Date.now())/1000)); $('r-clock').textContent=left;
     if (left<=0){ clearInterval(restIv); restIv=null; beep(1); renderWork() } };
@@ -688,6 +706,7 @@ function progress(it){
     st.fails=(st.fails||0)+1;
     if (st.fails<2) return {k:'same', msg:`Repites ${t} ${unitOf(v)}. Si vuelve a costar, bajará.`};
     st.fails=0;
+    if (v.w && t-step<mn){ if (st.kg-KG>=KG){ st.kg=roundKg(st.kg-KG); st.target=mx-2; return {k:'down', msg:`Baja a ${fmtKg(st.kg)}, ${st.target} ${unitOf(v)}`} } st.target=Math.max(1,t-step); return {k:'down', msg:`Baja a ${st.target} ${unitOf(v)}`} }
     if (t-step<mn && st.lvl>0){ st.lvl--; const pv=f.vars[st.lvl]; st.target=Math.max(pv.r[0], pv.r[1]-2*stepOf(pv)); return {k:'down', msg:`Vuelves a ${pv.n}, ${st.target} ${unitOf(pv)}`} }
     st.target=Math.max(step,t-step); return {k:'down', msg:`Baja a ${st.target} ${unitOf(v)}`};
   }
@@ -696,13 +715,17 @@ function progress(it){
 function levelUp(fid){
   const f=famById(fid), st=S.fam[fid], v=f.vars[st.lvl], last=f.vars.length-1;
   st.streak=0; st.target+=stepOf(v);
+  if (v.w && st.target>v.r[1]){
+    if (st.kg+KG<=f.maxKg){ st.kg+=KG; st.target=v.r[0]; return `Sube el peso a ${fmtKg(st.kg)}, ${st.target} ${unitOf(v)}` }
+    if (st.lvl<last){ st.lvl++; const nv=f.vars[st.lvl]; st.kg=roundKg(st.kg*0.6); st.target=nv.r[0]; return `Nuevo ejercicio: ${nv.n}, ${st.target} ${unitOf(nv)} con ${fmtKg(st.kg)}` }
+  }
   if (st.target>v.r[1] && st.lvl<last){ st.lvl++; const nv=f.vars[st.lvl]; st.target=nv.r[0]; return `Nuevo ejercicio: ${nv.n}, ${st.target} ${unitOf(nv)}` }
   return `Sube a ${st.target} ${unitOf(v)}`;
 }
 function finishSession(){
   clearInterval(restIv); keepAwake(false); beep(2);
   const res = X.items.map(it=>({it, p:progress(it)}));
-  const entry={d:new Date().toISOString(), day:X.day, x:X.items.map((it,i)=>({f:it.f,l:it.l,t:it.target,s:it.sets,o:res[i].p.k}))};
+  const entry={d:new Date().toISOString(), day:X.day, x:X.items.map((it,i)=>({f:it.f,l:it.l,t:it.target,kg:it.kg,s:it.sets,o:res[i].p.k}))};
   S.history.push(entry);
   save();
   const asks=res.filter(r=>r.p.k==='ask').length;
@@ -710,7 +733,7 @@ function finishSession(){
   $('sum-list').innerHTML = res.map(({it,p},i)=>{
     const f=famById(it.f), v=f.vars[it.l];
     return `${i?'<hr class="divider">':''}<div class="stack" style="gap:4px">
-      <div class="result"><strong>${esc(v.n)}</strong><span class="muted" style="font-variant-numeric:tabular-nums">${it.sets.join(' · ')} / ${it.target}</span></div>
+      <div class="result"><strong>${esc(v.n)}</strong><span class="muted" style="font-variant-numeric:tabular-nums">${it.sets.join(' · ')} / ${it.target}${v.w?' · '+fmtKg(it.kg):''}</span></div>
       <div id="ans-${i}">${p.k==='ask'
         ? `<p style="margin-bottom:8px">${esc(p.msg)}</p><div class="row">
             <button class="chip" data-ans="facil" data-i="${i}">Fácil</button>
@@ -792,6 +815,7 @@ $('sum-ok').onclick=()=>route();
 
 /* ---------- Arranque ---------- */
 function route(){
+  if (S.fam.pull && S.fam.pull.kg==null){ delete S.fam.pull; save() }
   if (!S.placed){ renderWelcome(); show('welcome') }
   else { renderHome(); show('home') }
 }
