@@ -125,6 +125,13 @@ details[open]>summary::after{content:" –"}
   <section id="v-test" class="stack" hidden>
     <div class="label" id="t-step"></div>
     <div class="progress"><span id="t-bar"></span></div>
+    <div id="t-rest" class="stack" hidden>
+      <div class="label rest" style="text-align:center">Descanso antes de seguir</div>
+      <div class="big rest" id="tr-clock">3:00</div>
+      <p style="text-align:center" id="tr-msg"></p>
+      <button class="btn ghost" id="tr-skip">Estoy listo</button>
+    </div>
+    <div id="t-work" class="stack">
     <div class="fig-box" id="t-fig"></div>
     <div><div class="label" id="t-fam"></div><h2 id="t-name"></h2></div>
     <p class="cue" id="t-cue"></p>
@@ -135,6 +142,7 @@ details[open]>summary::after{content:" –"}
     </div>
     <div class="stepper"><button id="t-minus" aria-label="Menos">−</button><output id="t-val">0</output><button id="t-plus" aria-label="Más">+</button></div>
     <button class="btn" id="t-ok">Guardar resultado</button>
+    </div>
     <button class="link" id="t-cancel">Cancelar prueba</button>
   </section>
 
@@ -491,8 +499,8 @@ $('t-ok').onclick=()=>{
   tWatch.stop();
   const f=FAMS[T.fi], v=f.vars[T.lvl], r=tStep.get(), [mn,mx]=v.r, step=stepOf(v);
   T.tried.add(T.lvl);
-  if (r<mn && T.lvl>0 && !T.tried.has(T.lvl-1)){ T.lvl--; renderTest(); hint('Bajamos un peldaño para probar uno más fácil.'); return }
-  if (r>Math.round(mx*1.2) && T.lvl<f.vars.length-1 && !T.tried.has(T.lvl+1)){ T.lvl++; renderTest(); hint('Muy bien. Probamos el siguiente peldaño.'); return }
+  if (r<mn && T.lvl>0 && !T.tried.has(T.lvl-1)){ T.lvl--; testRest(`Ahora probarás uno más fácil: ${f.vars[T.lvl].n}.`); return }
+  if (r>Math.round(mx*1.2) && T.lvl<f.vars.length-1 && !T.tried.has(T.lvl+1)){ T.lvl++; testRest(`Muy bien. Ahora probarás uno más difícil: ${f.vars[T.lvl].n}.`); return }
   let target = r<mn ? Math.max(step, Math.round(r*0.8/step)*step) : Math.max(mn, Math.min(mx, Math.round(r*0.7/step)*step));
   T.placed[f.id]={lvl:T.lvl, target, fails:0, streak:0};
   T.fi++;
@@ -501,8 +509,18 @@ $('t-ok').onclick=()=>{
   }
   T.lvl=FAMS[T.fi].start; T.tried=new Set(); renderTest();
 };
+let trIv=null;
+function testRest(msg){
+  $('t-work').hidden=true; $('t-rest').hidden=false; $('tr-msg').textContent=msg;
+  const end=Date.now()+180000;
+  const tick=()=>{ const left=Math.max(0,Math.ceil((end-Date.now())/1000)); $('tr-clock').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+    if (left<=0){ beep(1); endTestRest() } };
+  clearInterval(trIv); trIv=setInterval(tick,250); tick();
+}
+function endTestRest(){ clearInterval(trIv); trIv=null; $('t-rest').hidden=true; $('t-work').hidden=false; renderTest() }
+$('tr-skip').onclick=endTestRest;
 function hint(t){ $('t-instr').innerHTML = `<strong>${esc(t)}</strong> ` + $('t-instr').innerHTML }
-$('t-cancel').onclick=()=>{ tWatch.stop(); T=null; keepAwake(false); route() };
+$('t-cancel').onclick=()=>{ tWatch.stop(); clearInterval(trIv); $('t-rest').hidden=true; $('t-work').hidden=false; T=null; keepAwake(false); route() };
 
 /* ---------- Sesión ---------- */
 let X=null, restIv=null;
