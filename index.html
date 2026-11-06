@@ -17,6 +17,7 @@
   --bg:#0F151B; --surface:#18212A; --ink:#E7EDF2; --muted:#93A2AF; --line:#2A3743;
   --accent:#7D98FF; --accent-ink:#0B1020; --warm:#F0A050; --good:#4FC283; --bad:#F07068; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
 main{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
@@ -70,6 +71,14 @@ details[open]>summary::after{content:" –"}
 .tag.down{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
 .tag.same{background:color-mix(in srgb,var(--muted) 16%,transparent);color:var(--muted)}
 .hist{font-size:.9rem;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-variant-numeric:tabular-nums}
+.figure{display:block;width:100%;max-height:190px;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;fill:var(--ink)}
+.figure .prop{stroke:var(--muted);stroke-width:3;fill:none;opacity:.6}
+.figure .ghost{opacity:.28}
+.figure .fig-txt{font-family:var(--body);font-size:11px;font-weight:600;stroke:none;fill:var(--muted)}
+.fig-box{background:color-mix(in srgb,var(--line) 35%,transparent);border-radius:12px;padding:10px 8px 4px}
+.howto{grid-column:1/-1}
+.howto>summary{font-weight:500;color:var(--accent);font-size:.95rem}
+.howto .fig-box{margin-top:8px}
 .toast{font-size:.85rem;color:var(--muted);text-align:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -116,6 +125,7 @@ details[open]>summary::after{content:" –"}
   <section id="v-test" class="stack" hidden>
     <div class="label" id="t-step"></div>
     <div class="progress"><span id="t-bar"></span></div>
+    <div class="fig-box" id="t-fig"></div>
     <div><div class="label" id="t-fam"></div><h2 id="t-name"></h2></div>
     <p class="cue" id="t-cue"></p>
     <p id="t-instr"></p>
@@ -134,6 +144,7 @@ details[open]>summary::after{content:" –"}
     <div class="progress"><span id="s-bar"></span></div>
 
     <div id="s-work" class="stack">
+      <div class="fig-box" id="s-fig"></div>
       <div><div class="label" id="s-fam"></div><h2 id="s-name"></h2></div>
       <p class="cue" id="s-cue"></p>
       <div class="big" id="s-target"></div>
@@ -205,6 +216,116 @@ const NEED = 5; // sesiones seguidas cumpliendo antes de preguntar si subir
 const stepOf = v => v.t ? 5 : 1;
 const unitOf = v => v.t ? (v.side ? 's/lado' : 's') : (v.side ? 'reps/lado' : 'reps');
 const famById = id => FAMS.find(f=>f.id===id);
+
+/* ---------- Dibujos: muñeco con postura inicial (clara) y final (oscura) ---------- */
+const G=112, LA=[20,19], LL=[25,25];
+const rad=a=>a*Math.PI/180;
+const along=(A,ang,len)=>[A[0]+Math.cos(rad(ang))*len, A[1]+Math.sin(rad(ang))*len];
+const body=(F,ang)=>({F1:F, P:along(F,ang,50), S:along(F,ang,88)});
+const knees=(K,ang)=>({F1:[K[0]-25,G-2], P:along(K,ang,25), S:along(K,ang,63)});
+const stand=(x=100)=>({S:[x,24],P:[x,62],F1:[x+3,G],F2:[x-1,G],H1:[x+3,62],H2:[x-2,61]});
+const squat=()=>({S:[106,52],P:[84,86],F1:[106,G],F2:[102,G],H1:[144,54],H2:[142,58],kh:[1,-1]});
+function ik(A,B,l,hint){
+  const dx=B[0]-A[0], dy=B[1]-A[1], d=Math.hypot(dx,dy)||1e-6, ux=dx/d, uy=dy/d;
+  if (d>=l[0]+l[1]) return {j:[A[0]+ux*l[0],A[1]+uy*l[0]], e:[A[0]+ux*(l[0]+l[1]),A[1]+uy*(l[0]+l[1])]};
+  const x=(l[0]*l[0]-l[1]*l[1]+d*d)/(2*d), h=Math.sqrt(Math.max(0,l[0]*l[0]-x*x));
+  let px=-uy, py=ux; if (px*hint[0]+py*hint[1]<0){px=-px;py=-py}
+  return {j:[A[0]+ux*x+px*h, A[1]+uy*x+py*h], e:B};
+}
+const ln=(a,b,o=1)=>`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"${o<1?` opacity="${o}"`:''}/>`;
+const limb=(A,B,l,h,o)=>{const r=ik(A,B,l,h); return ln(A,r.j,o)+ln(r.j,r.e,o)};
+function drawFrame(f){
+  let s='';
+  if (f.front){
+    const SL=[f.S[0]-12,f.S[1]], SR=[f.S[0]+12,f.S[1]];
+    if (!f.noLegs){
+      const PL=[f.P[0]-8,f.P[1]], PR=[f.P[0]+8,f.P[1]];
+      s+=ln(f.S,f.P)+ln(PL,PR)+limb(PL,f.FL,LL,f.khL||[-1,0])+limb(PR,f.FR,LL,f.khR||[1,0]);
+    }
+    s+=ln(SL,SR)+limb(SL,f.HL,LA,f.ehL||[-1,0])+limb(SR,f.HR,LA,f.ehR||[1,0]);
+    const hd=f.head||[f.S[0],f.S[1]-13];
+    s+=`<circle cx="${hd[0]}" cy="${hd[1]}" r="7.5" stroke="none"/>`;
+  } else {
+    const kh=f.kh||[1,0], eh=f.eh||[0,1];
+    if (f.F2) s+=limb(f.P,f.F2,LL,f.kh2||kh,.45);
+    if (f.H2) s+=limb(f.S,f.H2,LA,f.eh2||eh,.45);
+    s+=ln(f.P,f.S)+limb(f.P,f.F1,LL,kh)+limb(f.S,f.H1,LA,eh);
+    const dx=f.S[0]-f.P[0], dy=f.S[1]-f.P[1], d=Math.hypot(dx,dy)||1;
+    const hd=f.head||[f.S[0]+dx/d*12, f.S[1]+dy/d*12];
+    s+=`<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="7.5" stroke="none"/>`;
+  }
+  const t=f.tx!=null?` transform="translate(${f.tx} ${f.ty||0}) scale(${f.sc||1})"`:'';
+  return `<g${t}>${s}</g>`;
+}
+const PROPS={
+  wall:'<line x1="152" y1="0" x2="152" y2="112"/>',
+  table:'<path d="M146 74H196M152 74V112M190 74V112"/>',
+  chair:'<path d="M58 84H92M60 84V112M90 84V112M60 84V44"/>',
+  wallR:'<line x1="146" y1="0" x2="146" y2="112"/>'
+};
+const FIG={
+ push:[
+  {p:'wall', a:{...body([80,G],-67),H1:[152,36],eh:[0,1]}, b:{...body([80,G],-57),H1:[152,36],eh:[0,1]}},
+  {p:'table', a:{...body([55,G],-40),H1:[148,74],eh:[-1,1]}, b:{...body([55,G],-30),H1:[148,74],eh:[-1,-1]}},
+  {a:{...knees([70,110],-36),H1:[122,G],kh:[0,1]}, b:{...knees([70,110],-12),H1:[122,G],kh:[0,1],eh:[-1,-1]}},
+  {a:{...body([40,G],-26),H1:[120,G]}, b:{...body([40,G],-9),H1:[120,G],eh:[-1,-1]}},
+  {a:{...body([40,G],-26),H1:[120,G]}, b:{...body([40,G],-9),H1:[120,G],eh:[-1,-1]}, txt:'2 s abajo'},
+  {a:{...body([40,G],-26),H1:[120,G]}, b:{...body([40,G],-9),H1:[120,G],eh:[-1,-1]}, txt:'manos juntas'},
+  {a:{front:true,noLegs:true,S:[100,72],HL:[52,G],HR:[148,G]},
+   b:{front:true,noLegs:true,S:[76,96],HL:[52,G],HR:[148,G],ehL:[-1,-1]}},
+  {a:{...body([40,G],-22),H1:[100,G]}, b:{...body([40,G],-8),H1:[100,G],eh:[-1,-1]}, txt:'manos a la cintura'}
+ ],
+ legs:[
+  {p:'chair', a:{S:[94,48],P:[80,82],F1:[110,G],F2:[106,G],H1:[132,50],H2:[130,54],kh:[1,-1]}, b:stand(124)},
+  {a:stand(100), b:squat()},
+  {a:stand(100), b:squat(), txt:'3 s abajo'},
+  {a:stand(100), b:{S:[98,44],P:[96,82],F1:[124,G],F2:[58,G-2],kh:[1,-1],kh2:[0,1],H1:[100,82],H2:[94,82]}},
+  {a:squat(), b:{S:[104,20],P:[104,58],F1:[108,100],F2:[103,101],H1:[88,54],H2:[86,56]}},
+  {a:{front:true,S:[100,26],P:[100,64],FL:[70,G],FR:[130,G],HL:[86,64],HR:[114,64]},
+   b:{front:true,S:[74,58],P:[72,92],FL:[40,G],FR:[124,G],khL:[-1,-1],HL:[64,84],HR:[84,84],ehL:[-1,0],ehR:[1,0]}},
+  {p:'wallR', a:{S:[100,24],P:[100,62],F1:[102,G],F2:[82,70],kh2:[0.3,1],H1:[146,40],H2:[86,66],eh:[0,1]},
+   b:{S:[104,56],P:[86,90],F1:[104,G],F2:[58,104],kh:[1,-1],kh2:[0,1],H1:[146,58],H2:[66,98],eh:[0,1]}, txt:'mano en la pared'},
+  {a:{S:[100,24],P:[100,62],F1:[102,G],F2:[140,82],H1:[138,30],kh2:[0,1]},
+   b:{S:[110,64],P:[86,96],F1:[104,G],F2:[136,94],kh:[1,-1],H1:[148,62]}, txt:'baja lento'}
+ ],
+ post:[
+  {a:{S:[60,104],P:[98,104],F1:[138,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[48,104]},
+   b:{S:[62,104],P:[94,82],F1:[134,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[50,104]}},
+  {a:{S:[60,104],P:[98,104],F1:[138,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[48,104]},
+   b:{S:[62,104],P:[94,82],F1:[134,G],H1:[96,110],kh:[0,-1],eh:[0,-1],head:[50,104]}, txt:'3 s arriba'},
+  {a:{S:[128,106],P:[90,106],F1:[40,108],H1:[168,106],eh:[0,-1],head:[141,104]},
+   b:{S:[126,98],P:[90,106],F1:[42,94],H1:[164,84],eh:[0,-1],head:[138,92]}, txt:'2 s arriba'},
+  {a:{S:[60,104],P:[98,104],F1:[138,G],F2:[140,84],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[48,104]},
+   b:{S:[62,104],P:[94,82],F1:[134,G],F2:[142,58],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[50,104]}},
+  {a:{S:[126,100],P:[90,106],F1:[42,104],F2:[42,92],H1:[166,84],H2:[166,102],eh:[0,-1],head:[138,95]},
+   b:{S:[126,100],P:[90,106],F1:[42,92],F2:[42,104],H1:[166,102],H2:[166,84],eh:[0,-1],head:[138,95]}},
+  {extra:[
+    {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[66,-8],HR:[134,-8],tx:35-62,ty:42.6,sc:.62},
+    {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[49,24],HR:[151,24],tx:100-62,ty:42.6,sc:.62},
+    {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[72,6],HR:[128,6],ehL:[0,1],ehR:[0,1],tx:165-62,ty:42.6,sc:.62}], txt:'Y · T · W (visto desde arriba)'},
+  {a:{S:[60,104],P:[98,104],F1:[138,G],F2:[140,84],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[48,104]},
+   b:{S:[62,104],P:[94,82],F1:[134,G],F2:[142,58],kh:[0,-1],kh2:[0,-1],H1:[96,110],eh:[0,-1],head:[50,104]}, txt:'3 s arriba'}
+ ],
+ core:[
+  {b:{...knees([70,110],-17),H1:[148,G],eh:[-1,1],kh:[0,1]}},
+  {b:{...body([40,G],-13),H1:[148,G],eh:[-1,1]}},
+  {b:{...body([40,G],-17),H1:[146,G],eh:[1,0],H2:[132,46],eh2:[1,0]}, txt:'de lado'},
+  {b:{S:[72,94],P:[100,106],F1:[118,84],kh:[0,-1],H1:[106,80],eh:[0,1],head:[61,88]}, txt:'rodillas al pecho'},
+  {b:{S:[66,98],P:[100,106],F1:[150,94],kh:[0,-1],H1:[28,88],eh:[0,-1],head:[55,94]}, txt:'lumbar pegada'},
+  {b:{S:[120,100],P:[89,105],F1:[40,G],H1:[156,G],eh:[0,1]}, txt:'codos adelantados'},
+  {b:{S:[100,72],P:[98,104],F1:[122,104],kh:[0,-1],H1:[99,G],eh:[1,0]}, txt:'culo despegado'}
+ ]
+};
+function figSVG(fid,lvl){
+  const d=FIG[fid]?.[lvl]; if(!d) return '';
+  let s=`<g class="prop">${d.p?PROPS[d.p]:''}<line x1="4" y1="${G+1}" x2="196" y2="${G+1}"/></g>`;
+  if (d.a) s+=`<g class="${d.b?'fig ghost':'fig'}">${drawFrame(d.a)}</g>`;
+  (d.extra||[]).forEach(e=>s+=`<g class="fig">${drawFrame(e)}</g>`);
+  if (d.b) s+=`<g class="fig">${drawFrame(d.b)}</g>`;
+  if (d.txt) s+=`<text x="196" y="${-1}" text-anchor="end" class="fig-txt">${d.txt}</text>`;
+  return `<svg class="figure" viewBox="0 -12 200 128" role="img" aria-hidden="true">${s}</svg>`;
+}
+
 
 /* ---------- Estado y guardado ---------- */
 const LS_KEY = 'escalera-calistenia-v1';
@@ -315,6 +436,7 @@ function renderHome(){
       <div><div class="label">${f.name} · peldaño ${st.lvl+1}/${f.vars.length} · ${Math.min(st.streak||0,NEED)}/${NEED} para subir</div><div class="name">${esc(v.n)}</div></div>
       <div class="target">${ROUNDS}×${st.target}<span class="muted" style="font-size:.9rem;font-family:var(--body);font-weight:500"> ${unitOf(v)}</span></div>
       <div class="ladder" aria-hidden="true">${bars}</div>
+      <details class="howto"><summary>Cómo se hace</summary><div class="fig-box">${figSVG(f.id,st.lvl)}</div><p class="cue" style="margin-top:6px">${esc(v.c)}</p></details>
       <div class="ex-actions">
         ${st.lvl>0?`<button class="link" data-adj="${f.id}" data-d="-1">Más fácil</button>`:''}
         ${st.lvl<f.vars.length-1?`<button class="link" data-adj="${f.id}" data-d="1">Más difícil</button>`:''}
@@ -358,6 +480,7 @@ function renderTest(){
   const f=FAMS[T.fi], v=f.vars[T.lvl];
   $('t-step').textContent=`Prueba ${T.fi+1} de ${FAMS.length}`;
   $('t-bar').style.width=(T.fi/FAMS.length*100)+'%';
+  $('t-fig').innerHTML=figSVG(f.id,T.lvl);
   $('t-fam').textContent=f.name; $('t-name').textContent=v.n; $('t-cue').textContent=v.c;
   $('t-instr').innerHTML = v.t
     ? `Aguanta todo lo que puedas con buena postura${v.side?' (solo un lado)':''}. Usa el contador y apunta los segundos.`
@@ -398,6 +521,7 @@ function renderWork(){
   const it=X.items[X.ei], f=famById(it.f), v=curVar();
   $('s-step').textContent=`Ronda ${X.round+1}/${ROUNDS} · ejercicio ${X.ei+1}/${X.items.length}`;
   $('s-bar').style.width=(doneSets()/totalSets()*100)+'%';
+  $('s-fig').innerHTML=figSVG(f.id,it.l);
   $('s-fam').textContent=f.name; $('s-name').textContent=v.n; $('s-cue').textContent=v.c;
   $('s-target').innerHTML=fmtTarget(v,it.target);
   $('s-timer').hidden=!v.t; $('s-target').hidden=!!v.t;
