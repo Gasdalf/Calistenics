@@ -1,0 +1,502 @@
+<title>Escalera Calistenia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: una columna estrecha tipo app; la "escalera" de cada grupo muestra en qué peldaño estás. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --ink:#16212C; --muted:#5C6B78; --line:#D5DCE3;
+  --accent:#2448D8; --accent-ink:#FFFFFF; --warm:#D9731A; --good:#1E8A52; --bad:#C23B32;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151B; --surface:#18212A; --ink:#E7EDF2; --muted:#93A2AF; --line:#2A3743;
+  --accent:#7D98FF; --accent-ink:#0B1020; --warm:#F0A050; --good:#4FC283; --bad:#F07068; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151B; --surface:#18212A; --ink:#E7EDF2; --muted:#93A2AF; --line:#2A3743;
+  --accent:#7D98FF; --accent-ink:#0B1020; --warm:#F0A050; --good:#4FC283; --bad:#F07068; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
+main{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance}
+h1{font-size:2.1rem;font-weight:800;letter-spacing:.01em;text-transform:uppercase}
+h2{font-size:1.5rem;font-weight:700}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+.label{font-size:.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-weight:700;font-size:1.3rem;
+  letter-spacing:.04em;text-transform:uppercase;padding:14px 18px;border-radius:12px;width:100%}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.small{font-size:1rem;padding:10px 12px;width:auto}
+.link{color:var(--muted);text-decoration:underline;font-size:.95rem;padding:6px 0}
+.link.danger{color:var(--bad)}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.ex{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
+.ex .name{font-weight:600;min-width:0}
+.ex .target{font-family:var(--display);font-weight:700;font-size:1.5rem;font-variant-numeric:tabular-nums}
+.ladder{grid-column:1/-1;display:flex;gap:4px;align-items:flex-end;height:22px;margin-top:4px}
+.ladder i{flex:1;background:var(--line);border-radius:2px}
+.ladder i.done{background:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.ladder i.cur{background:var(--accent)}
+.ex-actions{grid-column:1/-1;display:flex;gap:14px}
+.divider{border:0;border-top:1px solid var(--line);margin:4px 0}
+details>summary{cursor:pointer;font-weight:600;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:" +";color:var(--muted)}
+details[open]>summary::after{content:" –"}
+.big{font-family:var(--display);font-weight:800;font-size:5rem;line-height:1;font-variant-numeric:tabular-nums;text-align:center}
+.big small{font-size:1.6rem;font-weight:700;color:var(--muted)}
+.stepper{display:grid;grid-template-columns:64px 1fr 64px;gap:10px;align-items:center}
+.stepper button{height:64px;border-radius:12px;border:1.5px solid var(--line);font-size:2rem;font-weight:700;background:var(--surface)}
+.stepper output{font-family:var(--display);font-weight:800;font-size:3.4rem;text-align:center;font-variant-numeric:tabular-nums}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--accent);transition:width .3s}
+.rest{color:var(--warm)}
+.cue{font-size:.95rem;color:var(--muted)}
+.result{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.tag{font-size:.82rem;font-weight:600;padding:3px 9px;border-radius:6px}
+.tag.up{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.tag.down{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.tag.same{background:color-mix(in srgb,var(--muted) 16%,transparent);color:var(--muted)}
+.hist{font-size:.9rem;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-variant-numeric:tabular-nums}
+.toast{font-size:.85rem;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<main>
+  <!-- INICIO -->
+  <section id="v-home" class="stack" hidden>
+    <header class="top">
+      <div><div class="label">Hoy</div><h1>Escalera</h1></div>
+      <div class="chip" id="week-chip">0 esta semana</div>
+    </header>
+    <div class="card" id="plan"></div>
+    <button class="btn" id="start-session">Empezar sesión</button>
+    <p class="muted" style="font-size:.9rem">Circuito: haces los 4 ejercicios seguidos y repites 3 rondas. Calienta un par de minutos antes (movilidad de hombros, cadera y unas sentadillas suaves).</p>
+
+    <details class="card" id="hist-box">
+      <summary>Historial</summary>
+      <div id="hist"></div>
+    </details>
+    <details class="card">
+      <summary>Ajustes</summary>
+      <div class="stack">
+        <div><div class="label">Descanso entre ejercicios</div>
+          <div class="row" id="rest-opts" style="margin-top:6px"></div></div>
+        <div><div class="label">Cómo sube la dificultad</div>
+          <p class="cue" style="margin-top:4px">Cuando cumples el objetivo en las 3 series durante 5 sesiones seguidas, al terminar te pregunta qué tal fue. Si contestas Fácil o Justo, sube 1 rep (o 5 s); si contestas Al límite, se mantiene y te vuelve a preguntar la próxima vez. Al pasar del tope de un ejercicio, pasas a la variante siguiente. Una sesión sin cumplir pone el contador a 0, y si dos sesiones seguidas te quedas por debajo del 80 %, baja.</p></div>
+        <div class="row"><button class="link" id="retest">Repetir prueba inicial</button>
+          <button class="link danger" id="reset">Borrar todo el progreso</button></div>
+      </div>
+    </details>
+    <p class="toast" id="sync"></p>
+  </section>
+
+  <!-- BIENVENIDA -->
+  <section id="v-welcome" class="stack" hidden>
+    <div><div class="label">Calistenia sin material · 15 min</div><h1>Escalera</h1></div>
+    <p>Cada grupo de músculos es una escalera de ejercicios, del más fácil al más difícil. Primero una prueba corta para saber en qué peldaño empiezas. Después, cada sesión te dice qué hacer y sube la dificultad según lo que apuntes.</p>
+    <div class="card" id="ladders-preview"></div>
+    <button class="btn" id="start-test">Hacer la prueba inicial</button>
+    <p class="muted" style="font-size:.9rem">Unos 10 minutos. Haz cada ejercicio una vez, con buena técnica, hasta que no puedas más.</p>
+  </section>
+
+  <!-- PRUEBA -->
+  <section id="v-test" class="stack" hidden>
+    <div class="label" id="t-step"></div>
+    <div class="progress"><span id="t-bar"></span></div>
+    <div><div class="label" id="t-fam"></div><h2 id="t-name"></h2></div>
+    <p class="cue" id="t-cue"></p>
+    <p id="t-instr"></p>
+    <div id="t-timer" class="stack" hidden>
+      <div class="big" id="t-clock">0<small> s</small></div>
+      <button class="btn ghost" id="t-timer-btn">Empezar a contar</button>
+    </div>
+    <div class="stepper"><button id="t-minus" aria-label="Menos">−</button><output id="t-val">0</output><button id="t-plus" aria-label="Más">+</button></div>
+    <button class="btn" id="t-ok">Guardar resultado</button>
+    <button class="link" id="t-cancel">Cancelar prueba</button>
+  </section>
+
+  <!-- SESIÓN -->
+  <section id="v-session" class="stack" hidden>
+    <div class="row" style="justify-content:space-between"><div class="label" id="s-step"></div><button class="link" id="s-quit">Salir</button></div>
+    <div class="progress"><span id="s-bar"></span></div>
+
+    <div id="s-work" class="stack">
+      <div><div class="label" id="s-fam"></div><h2 id="s-name"></h2></div>
+      <p class="cue" id="s-cue"></p>
+      <div class="big" id="s-target"></div>
+      <div id="s-timer" class="stack" hidden>
+        <div class="big" id="s-clock">0<small> s</small></div>
+        <button class="btn ghost" id="s-timer-btn">Empezar a contar</button>
+      </div>
+      <div><div class="label" style="text-align:center;margin-bottom:6px" id="s-done-label">¿Cuántas hiciste?</div>
+        <div class="stepper"><button id="s-minus" aria-label="Menos">−</button><output id="s-val">0</output><button id="s-plus" aria-label="Más">+</button></div></div>
+      <button class="btn" id="s-ok">Serie hecha</button>
+    </div>
+
+    <div id="s-rest" class="stack" hidden>
+      <div class="label rest" style="text-align:center">Descanso</div>
+      <div class="big rest" id="r-clock">30</div>
+      <p style="text-align:center" class="muted">Siguiente: <strong id="r-next" style="color:var(--ink)"></strong></p>
+      <button class="btn ghost" id="r-skip">Saltar descanso</button>
+    </div>
+  </section>
+
+  <!-- RESUMEN -->
+  <section id="v-summary" class="stack" hidden>
+    <div><div class="label" id="sum-label">Sesión terminada</div><h1 id="sum-title">Hecho</h1></div>
+    <div class="card" id="sum-list"></div>
+    <button class="btn" id="sum-ok">Volver al inicio</button>
+  </section>
+</main>
+
+<script>
+/* ---------- Ejercicios: cada grupo es una escalera ---------- */
+const FAMS = [
+ {id:'push', name:'Empuje', start:3, vars:[
+  {n:'Flexiones en la pared', r:[8,20], c:'De pie, manos en la pared a la altura del pecho. Cuerpo recto, baja hasta casi tocar con la nariz.'},
+  {n:'Flexiones inclinadas', r:[6,15], c:'Manos en una mesa o encimera firme. Cuerpo en línea, pecho hasta el borde.'},
+  {n:'Flexiones de rodillas', r:[6,15], c:'Rodillas en el suelo, cadera alineada con la espalda. Pecho al suelo.'},
+  {n:'Flexiones', r:[5,15], c:'Cuerpo como una tabla, codos a unos 45°. Pecho casi al suelo y extiende del todo.'},
+  {n:'Flexiones con pausa', r:[5,12], c:'Igual que la flexión normal, pero aguanta 2 s abajo sin apoyarte.'},
+  {n:'Flexiones diamante', r:[5,12], c:'Manos juntas formando un rombo bajo el pecho. Codos pegados al cuerpo.'},
+  {n:'Flexiones arquero', r:[3,8], side:true, c:'Manos muy abiertas. Baja hacia un lado con ese brazo doblado y el otro casi recto. Cuenta por lado.'},
+  {n:'Flexiones pseudo planche', r:[3,10], c:'Manos a la altura de la cintura, dedos hacia fuera, hombros adelantados por delante de las manos.'}]},
+ {id:'legs', name:'Piernas', start:1, vars:[
+  {n:'Sentadilla a silla', r:[8,20], c:'Siéntate en una silla y levántate sin impulso, sin usar las manos.'},
+  {n:'Sentadilla', r:[10,25], c:'Pies a la anchura de los hombros, talones apoyados. Baja hasta que la cadera pase la rodilla.'},
+  {n:'Sentadilla con pausa', r:[8,15], c:'Baja y aguanta 3 s abajo. Sube controlado.'},
+  {n:'Zancada inversa', r:[6,15], side:true, c:'Da un paso atrás y baja la rodilla casi al suelo. Alterna. Cuenta por pierna.'},
+  {n:'Sentadilla con salto', r:[8,15], c:'Sentadilla completa y salta. Aterriza suave y enlaza la siguiente.'},
+  {n:'Sentadilla cosaca', r:[5,12], side:true, c:'Piernas muy abiertas. Baja sobre una pierna con la otra estirada y el pie hacia arriba. Cuenta por lado.'},
+  {n:'Sentadilla shrimp asistida', r:[3,8], side:true, c:'Sobre una pierna, agarra el otro pie detrás y baja la rodilla al suelo. Apóyate en la pared con una mano.'},
+  {n:'Pistol negativa', r:[3,8], side:true, c:'Sobre una pierna, la otra estirada al frente. Baja lo más lento posible y sube con las dos.'}]},
+ {id:'post', name:'Espalda y glúteo', start:1, vars:[
+  {n:'Puente de glúteo', r:[10,20], c:'Tumbado boca arriba, rodillas dobladas. Sube la cadera apretando glúteos.'},
+  {n:'Puente con pausa', r:[8,15], c:'Puente de glúteo aguantando 3 s arriba.'},
+  {n:'Superman con pausa', r:[8,15], c:'Boca abajo, levanta brazos y piernas a la vez. Aguanta 2 s arriba.'},
+  {n:'Puente a una pierna', r:[6,15], side:true, c:'Una pierna estirada en el aire, empuja con el talón de la otra. Cuenta por pierna.'},
+  {n:'Nadador', r:[10,20], c:'Boca abajo, brazos y piernas en el aire. Alterna brazo y pierna contrarios. Cada lado cuenta 1.'},
+  {n:'Y-T-W en el suelo', r:[5,10], c:'Boca abajo, pecho levantado. Forma Y, T y W con los brazos, aguantando 2 s en cada una. 1 ronda = 1 rep.'},
+  {n:'Puente a una pierna con pausa', r:[6,12], side:true, c:'Puente a una pierna aguantando 3 s arriba. Cuenta por pierna.'}]},
+ {id:'core', name:'Core', start:1, vars:[
+  {n:'Plancha de rodillas', r:[15,45], t:true, c:'Antebrazos y rodillas en el suelo. Cuerpo recto, aprieta abdomen y glúteos.'},
+  {n:'Plancha', r:[20,60], t:true, c:'Antebrazos y puntas de los pies. Ni cadera caída ni culo en pompa.'},
+  {n:'Plancha lateral', r:[15,45], t:true, side:true, c:'Sobre un antebrazo, cuerpo de lado en línea recta. Tiempo por lado.'},
+  {n:'Hollow con rodillas', r:[15,40], t:true, c:'Boca arriba, lumbar pegada al suelo, hombros y pies en el aire con las rodillas recogidas.'},
+  {n:'Hollow hold', r:[15,45], t:true, c:'Como el anterior pero piernas estiradas y brazos por encima de la cabeza. Lumbar siempre pegada.'},
+  {n:'Plancha larga', r:[15,40], t:true, c:'Plancha con los antebrazos bastante por delante de la cabeza. Más palanca, más difícil.'},
+  {n:'Tuck L-sit en el suelo', r:[5,20], t:true, c:'Sentado, manos en el suelo junto a la cadera. Empuja y despega el culo con las rodillas recogidas.'}]}
+];
+const ROUNDS = 3;
+const NEED = 5; // sesiones seguidas cumpliendo antes de preguntar si subir
+const stepOf = v => v.t ? 5 : 1;
+const unitOf = v => v.t ? (v.side ? 's/lado' : 's') : (v.side ? 'reps/lado' : 'reps');
+const famById = id => FAMS.find(f=>f.id===id);
+
+/* ---------- Estado y guardado ---------- */
+const LS_KEY = 'escalera-calistenia-v1';
+const fresh = () => ({v:1, placed:false, rest:30, fam:{}, history:[], updatedAt:0});
+let S = fresh();
+let dbDoc = null, saving = false, pending = false;
+
+function readLocal(){ try{ const t=localStorage.getItem(LS_KEY); return t?JSON.parse(t):null }catch(e){ return null } }
+function writeLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(S)) }catch(e){} }
+
+function save(){
+  S.updatedAt = Date.now();
+  if (S.history.length > 120) S.history = S.history.slice(-120);
+  writeLocal();
+  flush();
+}
+async function flush(){
+  if (!dbDoc) return;
+  if (saving){ pending = true; return }
+  saving = true;
+  try{ await dbDoc.set(JSON.parse(JSON.stringify(S))); setSync('Progreso guardado en tu cuenta') }
+  catch(e){ setSync('No se pudo guardar en la cuenta; queda guardado en este móvil') }
+  saving = false;
+  if (pending){ pending = false; flush() }
+}
+function setSync(t){ const el=document.getElementById('sync'); if(el) el.textContent=t }
+
+async function connect(){
+  if (!window.claude?.use) { setSync('Guardado solo en este navegador'); return }
+  try{
+    const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
+    const uid = user ? await user.id() : null;
+    if (!db || !uid){ setSync('Guardado solo en este navegador'); return }
+    dbDoc = db.collection('data/users/'+uid).doc('escalera');
+    const timer = new Promise(res=>setTimeout(()=>res('timeout'),10000));
+    const snap = await Promise.race([dbDoc.get(), timer]);
+    if (snap === 'timeout'){ setSync('La cuenta tarda en responder; uso lo guardado en este móvil'); return }
+    const remote = snap.exists ? snap.data() : null;
+    if (remote && (remote.updatedAt||0) > (S.updatedAt||0)){
+      S = Object.assign(fresh(), remote); writeLocal();
+      if (!busy()) route();
+      setSync('Progreso cargado de tu cuenta');
+    } else if (S.updatedAt){ flush() }
+    else setSync('Tu progreso se guardará en tu cuenta');
+  }catch(e){ setSync('Guardado solo en este navegador') }
+}
+
+/* ---------- Utilidades de UI ---------- */
+const $ = id => document.getElementById(id);
+const views = ['home','welcome','test','session','summary'];
+let current = 'home';
+function show(v){ current=v; views.forEach(x=>$('v-'+x).hidden = x!==v); window.scrollTo(0,0) }
+const busy = () => current==='test' || current==='session';
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) }
+function fmtTarget(v,t){ return `${t}<small> ${unitOf(v)}</small>` }
+
+let audio = null;
+function unlockAudio(){ try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); audio.resume() }catch(e){} }
+function beep(times=1){
+  try{ navigator.vibrate && navigator.vibrate(times>1?[150,100,150]:200) }catch(e){}
+  if (!audio) return;
+  for (let i=0;i<times;i++){
+    const o=audio.createOscillator(), g=audio.createGain(), t0=audio.currentTime+i*0.25;
+    o.frequency.value=880; g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.3,t0+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.18); o.connect(g).connect(audio.destination); o.start(t0); o.stop(t0+0.2);
+  }
+}
+let wake = null;
+async function keepAwake(on){
+  try{
+    if (on && !wake && navigator.wakeLock){ wake = await navigator.wakeLock.request('screen'); wake.addEventListener?.('release',()=>wake=null) }
+    if (!on && wake){ await wake.release(); wake=null }
+  }catch(e){}
+}
+
+/* Contador hacia arriba reutilizable */
+function makeStopwatch(clockEl, btnEl, onStop, targetGetter){
+  let t0=0, iv=null, beeped=false;
+  function tick(){ const s=Math.floor((Date.now()-t0)/1000); clockEl.innerHTML = s+'<small> s</small>';
+    const tg=targetGetter?.(); if (tg && !beeped && s>=tg){ beeped=true; beep(2) } }
+  return {
+    reset(){ clearInterval(iv); iv=null; beeped=false; clockEl.innerHTML='0<small> s</small>'; btnEl.textContent='Empezar a contar' },
+    toggle(){
+      if (iv){ clearInterval(iv); iv=null; const s=Math.floor((Date.now()-t0)/1000); btnEl.textContent='Volver a contar'; onStop(s) }
+      else { unlockAudio(); t0=Date.now(); beeped=false; iv=setInterval(tick,250); tick(); btnEl.textContent='Parar' }
+    },
+    stop(){ clearInterval(iv); iv=null }
+  };
+}
+function stepper(outEl, minus, plus, getStep){
+  let val=0;
+  const api = { get:()=>val, set(v){ val=Math.max(0,Math.round(v)); outEl.textContent=val } };
+  minus.onclick=()=>api.set(val-getStep()); plus.onclick=()=>api.set(val+getStep());
+  return api;
+}
+
+/* ---------- Inicio ---------- */
+function weekCount(){
+  const now=new Date(); const day=(now.getDay()+6)%7; const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate()-day);
+  return S.history.filter(h=>new Date(h.d)>=monday).length;
+}
+function renderHome(){
+  const wc=weekCount(); $('week-chip').textContent = wc===1 ? '1 sesión esta semana' : `${wc} sesiones esta semana`;
+  $('plan').innerHTML = FAMS.map((f,i)=>{
+    const st=S.fam[f.id], v=f.vars[st.lvl];
+    const bars=f.vars.map((_,k)=>`<i class="${k<st.lvl?'done':k===st.lvl?'cur':''}" style="height:${40+60*k/(f.vars.length-1)}%"></i>`).join('');
+    return `${i?'<hr class="divider">':''}<div class="ex">
+      <div><div class="label">${f.name} · peldaño ${st.lvl+1}/${f.vars.length} · ${Math.min(st.streak||0,NEED)}/${NEED} para subir</div><div class="name">${esc(v.n)}</div></div>
+      <div class="target">${ROUNDS}×${st.target}<span class="muted" style="font-size:.9rem;font-family:var(--body);font-weight:500"> ${unitOf(v)}</span></div>
+      <div class="ladder" aria-hidden="true">${bars}</div>
+      <div class="ex-actions">
+        ${st.lvl>0?`<button class="link" data-adj="${f.id}" data-d="-1">Más fácil</button>`:''}
+        ${st.lvl<f.vars.length-1?`<button class="link" data-adj="${f.id}" data-d="1">Más difícil</button>`:''}
+      </div></div>`;
+  }).join('');
+  $('plan').querySelectorAll('[data-adj]').forEach(b=>b.onclick=()=>{
+    const f=famById(b.dataset.adj), st=S.fam[f.id]; st.lvl=Math.min(f.vars.length-1,Math.max(0,st.lvl+ +b.dataset.d));
+    st.target=f.vars[st.lvl].r[0]; st.fails=0; st.streak=0; save(); renderHome();
+  });
+  $('rest-opts').innerHTML=[20,30,45,60,90].map(s=>`<button class="chip ${S.rest===s?'on':''}" data-rest="${s}">${s} s</button>`).join('');
+  $('rest-opts').querySelectorAll('[data-rest]').forEach(b=>b.onclick=()=>{ S.rest=+b.dataset.rest; save(); renderHome() });
+  const hs=S.history.slice(-15).reverse();
+  $('hist').innerHTML = hs.length ? hs.map(h=>{
+    const d=new Date(h.d).toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+    const rows=h.x.map(x=>{const f=famById(x.f), v=f.vars[x.l]; return `${esc(v.n)}: ${x.s.join(' · ')} ${unitOf(v)}`}).join('<br>');
+    return `<div class="label" style="padding-top:2px">${d}</div><div>${rows}</div>`;
+  }).join('') : '<p class="muted">Aún no hay sesiones.</p>';
+  $('hist').className = hs.length ? 'hist' : '';
+}
+let resetArmed=false;
+$('reset').onclick=()=>{
+  if (!resetArmed){ resetArmed=true; $('reset').textContent='Pulsa otra vez para borrar'; setTimeout(()=>{resetArmed=false;$('reset').textContent='Borrar todo el progreso'},4000); return }
+  S=fresh(); save(); resetArmed=false; $('reset').textContent='Borrar todo el progreso'; route();
+};
+$('retest').onclick=()=>startTest();
+
+/* ---------- Bienvenida ---------- */
+function renderWelcome(){
+  $('ladders-preview').innerHTML = FAMS.map((f,i)=>`${i?'<hr class="divider">':''}<div><div class="label">${f.name} · ${f.vars.length} peldaños</div>
+    <div class="cue">${f.vars.map(v=>esc(v.n)).join(' → ')}</div></div>`).join('');
+}
+$('start-test').onclick=()=>startTest();
+
+/* ---------- Prueba inicial ---------- */
+let T=null;
+const tStep = stepper($('t-val'),$('t-minus'),$('t-plus'),()=>T?stepOf(famById(FAMS[T.fi].id).vars[T.lvl]):1);
+const tWatch = makeStopwatch($('t-clock'),$('t-timer-btn'),s=>tStep.set(s));
+$('t-timer-btn').onclick=()=>tWatch.toggle();
+function startTest(){ unlockAudio(); T={fi:0, lvl:FAMS[0].start, tried:new Set(), placed:{}}; keepAwake(true); show('test'); renderTest() }
+function renderTest(){
+  const f=FAMS[T.fi], v=f.vars[T.lvl];
+  $('t-step').textContent=`Prueba ${T.fi+1} de ${FAMS.length}`;
+  $('t-bar').style.width=(T.fi/FAMS.length*100)+'%';
+  $('t-fam').textContent=f.name; $('t-name').textContent=v.n; $('t-cue').textContent=v.c;
+  $('t-instr').innerHTML = v.t
+    ? `Aguanta todo lo que puedas con buena postura${v.side?' (solo un lado)':''}. Usa el contador y apunta los segundos.`
+    : `Haz todas las repeticiones que puedas con buena técnica${v.side?' (con una pierna o lado)':''}. Para cuando la técnica empiece a fallar.`;
+  $('t-timer').hidden=!v.t; tWatch.reset(); tStep.set(0);
+}
+$('t-ok').onclick=()=>{
+  tWatch.stop();
+  const f=FAMS[T.fi], v=f.vars[T.lvl], r=tStep.get(), [mn,mx]=v.r, step=stepOf(v);
+  T.tried.add(T.lvl);
+  if (r<mn && T.lvl>0 && !T.tried.has(T.lvl-1)){ T.lvl--; renderTest(); hint('Bajamos un peldaño para probar uno más fácil.'); return }
+  if (r>Math.round(mx*1.2) && T.lvl<f.vars.length-1 && !T.tried.has(T.lvl+1)){ T.lvl++; renderTest(); hint('Muy bien. Probamos el siguiente peldaño.'); return }
+  let target = r<mn ? Math.max(step, Math.round(r*0.8/step)*step) : Math.max(mn, Math.min(mx, Math.round(r*0.7/step)*step));
+  T.placed[f.id]={lvl:T.lvl, target, fails:0, streak:0};
+  T.fi++;
+  if (T.fi>=FAMS.length){
+    S.fam=T.placed; S.placed=true; save(); T=null; keepAwake(false); show('home'); renderHome(); return;
+  }
+  T.lvl=FAMS[T.fi].start; T.tried=new Set(); renderTest();
+};
+function hint(t){ $('t-instr').innerHTML = `<strong>${esc(t)}</strong> ` + $('t-instr').innerHTML }
+$('t-cancel').onclick=()=>{ tWatch.stop(); T=null; keepAwake(false); route() };
+
+/* ---------- Sesión ---------- */
+let X=null, restIv=null;
+const sStep = stepper($('s-val'),$('s-minus'),$('s-plus'),()=>X?stepOf(curVar()):1);
+const sWatch = makeStopwatch($('s-clock'),$('s-timer-btn'),s=>sStep.set(s),()=>X?X.items[X.ei].target:0);
+$('s-timer-btn').onclick=()=>sWatch.toggle();
+function curVar(){ const it=X.items[X.ei]; return famById(it.f).vars[it.l] }
+$('start-session').onclick=()=>{
+  unlockAudio(); keepAwake(true);
+  X={round:0, ei:0, items:FAMS.map(f=>({f:f.id, l:S.fam[f.id].lvl, target:S.fam[f.id].target, sets:[]}))};
+  show('session'); renderWork();
+};
+function totalSets(){ return ROUNDS*X.items.length }
+function doneSets(){ return X.round*X.items.length + X.ei }
+function renderWork(){
+  const it=X.items[X.ei], f=famById(it.f), v=curVar();
+  $('s-step').textContent=`Ronda ${X.round+1}/${ROUNDS} · ejercicio ${X.ei+1}/${X.items.length}`;
+  $('s-bar').style.width=(doneSets()/totalSets()*100)+'%';
+  $('s-fam').textContent=f.name; $('s-name').textContent=v.n; $('s-cue').textContent=v.c;
+  $('s-target').innerHTML=fmtTarget(v,it.target);
+  $('s-timer').hidden=!v.t; $('s-target').hidden=!!v.t;
+  $('s-done-label').textContent = v.t ? 'Segundos aguantados' : '¿Cuántas hiciste?';
+  sWatch.reset(); sStep.set(v.t?0:it.target);
+  if (v.t) $('s-timer-btn').textContent=`Empezar (objetivo ${it.target} s)`;
+  $('s-work').hidden=false; $('s-rest').hidden=true;
+}
+$('s-ok').onclick=()=>{
+  sWatch.stop();
+  X.items[X.ei].sets.push(sStep.get());
+  X.ei++; if (X.ei>=X.items.length){ X.ei=0; X.round++ }
+  if (X.round>=ROUNDS){ finishSession(); return }
+  startRest();
+};
+function startRest(){
+  $('s-work').hidden=true; $('s-rest').hidden=false;
+  $('s-bar').style.width=(doneSets()/totalSets()*100)+'%';
+  const it=X.items[X.ei], v=famById(it.f).vars[it.l];
+  $('r-next').textContent=`${v.n} · ${it.target} ${unitOf(v)}`;
+  const end=Date.now()+S.rest*1000;
+  const tick=()=>{ const left=Math.max(0,Math.ceil((end-Date.now())/1000)); $('r-clock').textContent=left;
+    if (left<=0){ clearInterval(restIv); restIv=null; beep(1); renderWork() } };
+  clearInterval(restIv); restIv=setInterval(tick,250); tick();
+}
+$('r-skip').onclick=()=>{ clearInterval(restIv); restIv=null; renderWork() };
+let quitArmed=false;
+$('s-quit').onclick=()=>{
+  if (!quitArmed){ quitArmed=true; $('s-quit').textContent='Pulsa otra vez (no se guarda)'; setTimeout(()=>{quitArmed=false;$('s-quit').textContent='Salir'},4000); return }
+  quitArmed=false; $('s-quit').textContent='Salir'; clearInterval(restIv); sWatch.stop(); X=null; keepAwake(false); route();
+};
+
+/* Regla de progresión doble */
+function progress(it){
+  const f=famById(it.f), st=S.fam[it.f], v=f.vars[st.lvl], step=stepOf(v), [mn,mx]=v.r, last=f.vars.length-1;
+  const t=it.target, total=it.sets.reduce((a,b)=>a+b,0);
+  if (it.sets.every(s=>s>=t)){
+    st.fails=0; st.streak=(st.streak||0)+1;
+    if (st.streak>=NEED) return {k:'ask', msg:`${st.streak} sesiones seguidas cumpliendo. ¿Qué tal te ha ido?`};
+    return {k:'same', msg:`Objetivo cumplido · ${st.streak}/${NEED} para subir`};
+  }
+  st.streak=0;
+  if (total < 0.8*t*it.sets.length){
+    st.fails=(st.fails||0)+1;
+    if (st.fails<2) return {k:'same', msg:`Repites ${t} ${unitOf(v)}. Si vuelve a costar, bajará.`};
+    st.fails=0;
+    if (t-step<mn && st.lvl>0){ st.lvl--; const pv=f.vars[st.lvl]; st.target=Math.max(pv.r[0], pv.r[1]-2*stepOf(pv)); return {k:'down', msg:`Vuelves a ${pv.n}, ${st.target} ${unitOf(pv)}`} }
+    st.target=Math.max(step,t-step); return {k:'down', msg:`Baja a ${st.target} ${unitOf(v)}`};
+  }
+  st.fails=0; return {k:'same', msg:`Repites ${t} ${unitOf(v)}. El contador vuelve a 0/${NEED}.`};
+}
+function levelUp(fid){
+  const f=famById(fid), st=S.fam[fid], v=f.vars[st.lvl], last=f.vars.length-1;
+  st.streak=0; st.target+=stepOf(v);
+  if (st.target>v.r[1] && st.lvl<last){ st.lvl++; const nv=f.vars[st.lvl]; st.target=nv.r[0]; return `Nuevo ejercicio: ${nv.n}, ${st.target} ${unitOf(nv)}` }
+  return `Sube a ${st.target} ${unitOf(v)}`;
+}
+function finishSession(){
+  clearInterval(restIv); keepAwake(false); beep(2);
+  const res = X.items.map(it=>({it, p:progress(it)}));
+  const entry={d:new Date().toISOString(), x:X.items.map((it,i)=>({f:it.f,l:it.l,t:it.target,s:it.sets,o:res[i].p.k}))};
+  S.history.push(entry);
+  save();
+  const asks=res.filter(r=>r.p.k==='ask').length;
+  $('sum-title').textContent = asks ? 'Una pregunta' : 'Sesión hecha';
+  $('sum-list').innerHTML = res.map(({it,p},i)=>{
+    const f=famById(it.f), v=f.vars[it.l];
+    return `${i?'<hr class="divider">':''}<div class="stack" style="gap:4px">
+      <div class="result"><strong>${esc(v.n)}</strong><span class="muted" style="font-variant-numeric:tabular-nums">${it.sets.join(' · ')} / ${it.target}</span></div>
+      <div id="ans-${i}">${p.k==='ask'
+        ? `<p style="margin-bottom:8px">${esc(p.msg)}</p><div class="row">
+            <button class="chip" data-ans="facil" data-i="${i}">Fácil</button>
+            <button class="chip" data-ans="justo" data-i="${i}">Justo</button>
+            <button class="chip" data-ans="limite" data-i="${i}">Al límite</button></div>`
+        : `<span class="tag ${p.k}">${esc(p.msg)}</span>`}</div></div>`;
+  }).join('');
+  $('sum-list').querySelectorAll('[data-ans]').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i, it=res[i].it, box=$('ans-'+i);
+    if (b.dataset.ans==='limite'){
+      const v=famById(it.f).vars[S.fam[it.f].lvl];
+      entry.x[i].o='same';
+      box.innerHTML=`<span class="tag same">Repites ${S.fam[it.f].target} ${unitOf(v)}. Te volverá a preguntar la próxima vez.</span>`;
+    } else {
+      entry.x[i].o='up';
+      box.innerHTML=`<span class="tag up">${esc(levelUp(it.f))}</span>`;
+    }
+    save();
+  });
+  X=null; show('summary');
+}
+$('sum-ok').onclick=()=>route();
+
+/* ---------- Arranque ---------- */
+function route(){
+  if (!S.placed){ renderWelcome(); show('welcome') }
+  else { renderHome(); show('home') }
+}
+const local=readLocal(); if (local) S=Object.assign(fresh(), local);
+route();
+connect();
+document.addEventListener('visibilitychange',()=>{ if (document.visibilityState==='visible' && busy()) keepAwake(true) });
+</script>
