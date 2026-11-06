@@ -97,7 +97,7 @@ details[open]>summary::after{content:" –"}
     <div class="card" id="plan"></div>
     <button class="btn" id="start-session">Empezar sesión</button>
     <button class="btn ghost" id="start-mob">Movilidad · 12 min</button>
-    <p class="muted" style="font-size:.9rem">Circuito: haces los 4 ejercicios seguidos y repites 3 rondas. Calienta un par de minutos antes (movilidad de hombros, cadera y unas sentadillas suaves).</p>
+    <p class="muted" style="font-size:.9rem" id="week-note"></p>
 
     <details class="card" id="hist-box">
       <summary>Historial</summary>
@@ -109,8 +109,8 @@ details[open]>summary::after{content:" –"}
         <div><div class="label">Descanso entre ejercicios</div>
           <div class="row" id="rest-opts" style="margin-top:6px"></div></div>
         <div><div class="label">Cómo sube la dificultad</div>
-          <p class="cue" style="margin-top:4px">Cuando cumples el objetivo en las 3 series durante 5 sesiones seguidas, al terminar te pregunta qué tal fue. Si contestas Fácil o Justo, sube 1 rep (o 5 s); si contestas Al límite, se mantiene y te vuelve a preguntar la próxima vez. Al pasar del tope de un ejercicio, pasas a la variante siguiente. Una sesión sin cumplir pone el contador a 0, y si dos sesiones seguidas te quedas por debajo del 80 %, baja.</p>
-          <p class="cue" style="margin-top:6px">Los días A y B se alternan solos. A: empuje, piernas, hombros y core. B: empuje, piernas, espalda y bíceps (remo con mancuernas), y glúteo. Al final de cada sesión hay 3 minutos de estiramientos.</p></div>
+          <p class="cue" style="margin-top:4px">Cuando cumples el objetivo en las 3 series, te pregunta qué tal fue. Fácil: sube 1 rep (o 5 s) la próxima vez. Justo: sube cuando lleves dos sesiones seguidas así. Al límite: se mantiene. Al pasar del tope de un ejercicio, sube el peso (con mancuernas, 2,5 kg) o pasas a la variante siguiente. Si dos sesiones seguidas te quedas por debajo del 80 %, baja.</p>
+          <p class="cue" style="margin-top:6px">Los días A y B se alternan solos. A: flexiones, piernas, remo y core. B: hombros, piernas, remo, y glúteo y espalda baja. Antes de cada sesión hay 2 min de calentamiento y al final 3 min de estiramientos. Lo ideal son 5-6 sesiones a la semana con 1-2 días de descanso o movilidad.</p></div>
         <div class="row"><button class="link" id="retest">Repetir prueba inicial</button>
           <button class="link danger" id="reset">Borrar todo el progreso</button></div>
       </div>
@@ -207,7 +207,7 @@ details[open]>summary::after{content:" –"}
 <script>
 /* ---------- Ejercicios: cada grupo es una escalera ---------- */
 const FAMS = [
- {id:'push', name:'Empuje', start:3, day:'AB', vars:[
+ {id:'push', name:'Empuje', start:3, day:'A', vars:[
   {n:'Flexiones en la pared', r:[8,20], c:'De pie, manos en la pared a la altura del pecho. Cuerpo recto, baja hasta casi tocar con la nariz.'},
   {n:'Flexiones inclinadas', r:[6,15], c:'Manos en una mesa o encimera firme. Cuerpo en línea, pecho hasta el borde.'},
   {n:'Flexiones de rodillas', r:[6,15], c:'Rodillas en el suelo, cadera alineada con la espalda. Pecho al suelo.'},
@@ -221,11 +221,10 @@ const FAMS = [
   {n:'Sentadilla', r:[10,25], c:'Pies a la anchura de los hombros, talones apoyados. Baja hasta que la cadera pase la rodilla.'},
   {n:'Sentadilla con pausa', r:[8,15], c:'Baja y aguanta 3 s abajo. Sube controlado.'},
   {n:'Zancada inversa', r:[6,15], side:true, c:'Da un paso atrás y baja la rodilla casi al suelo. Alterna. Cuenta por pierna.'},
-  {n:'Sentadilla con salto', r:[8,15], c:'Sentadilla completa y salta. Aterriza suave y enlaza la siguiente.'},
-  {n:'Sentadilla cosaca', r:[5,12], side:true, c:'Piernas muy abiertas. Baja sobre una pierna con la otra estirada y el pie hacia arriba. Cuenta por lado.'},
-  {n:'Sentadilla shrimp asistida', r:[3,8], side:true, c:'Sobre una pierna, agarra el otro pie detrás y baja la rodilla al suelo. Apóyate en la pared con una mano.'},
-  {n:'Pistol negativa', r:[3,8], side:true, c:'Sobre una pierna, la otra estirada al frente. Baja lo más lento posible y sube con las dos.'}]},
- {id:'shoulder', name:'Hombros', start:1, day:'A', vars:[
+  {n:'Sentadilla goblet', r:[8,15], w:true, one:true, kg0:10, c:'Sujeta una mancuerna en vertical contra el pecho, agarrando el disco de arriba. Baja con el pecho alto y los codos por dentro de las rodillas.'},
+  {n:'Sentadilla búlgara', r:[6,12], side:true, c:'Empeine del pie de atrás sobre una silla y pie de delante adelantado. Baja la rodilla de atrás hacia el suelo con el tronco recto. Cuenta por pierna.'},
+  {n:'Búlgara con mancuernas', r:[6,12], side:true, w:true, kg0:5, c:'Sentadilla búlgara con una mancuerna en cada mano, brazos colgando. Cuenta por pierna.'}]},
+ {id:'shoulder', name:'Hombros', start:1, day:'B', vars:[
   {n:'Toques de hombro en pica', r:[8,20], c:'En V invertida: cadera alta, manos y pies en el suelo. Levanta una mano y toca el hombro contrario sin mover la cadera. Cada toque cuenta 1.'},
   {n:'Flexiones pica', r:[5,12], c:'En V invertida, dobla los codos y baja la cabeza hacia el suelo, un poco por delante de las manos. Codos hacia atrás, no abiertos.'},
   {n:'Flexiones pica con pausa', r:[5,10], c:'Como la flexión pica, aguantando 2 s con la cabeza casi tocando el suelo.'},
@@ -233,18 +232,16 @@ const FAMS = [
   {n:'Subir por la pared', r:[2,6], c:'Desde plancha con los pies junto a la pared, sube los pies por la pared mientras acercas las manos, hasta quedar casi vertical. Baja igual. Cada subida cuenta 1.'},
   {n:'Pino contra la pared', r:[15,45], t:true, c:'Sube por la pared hasta quedar vertical, con el pecho mirando a la pared. Brazos estirados y abdomen apretado.'},
   {n:'Flexión de pino negativa', r:[2,6], c:'En pino contra la pared, baja lo más lento posible hasta apoyar la cabeza con cuidado. Baja los pies y vuelve a subir.'}]},
- {id:'pull', name:'Espalda y bíceps', start:0, day:'B', maxKg:25, vars:[
-  {n:'Remo con mancuerna a una mano', r:[8,12], side:true, w:true, c:'Una mano apoyada en una silla y los pies separados, tronco inclinado con la espalda recta. Tira de la mancuerna hacia la cadera con el codo pegado al cuerpo y baja controlado. Cuenta por brazo.'},
-  {n:'Remo inclinado con dos mancuernas', r:[8,12], w:true, c:'De pie, rodillas algo dobladas y tronco inclinado unos 45° con la espalda recta. Tira de las dos mancuernas hacia la cintura juntando los omóplatos.'},
-  {n:'Remo inclinado con pausa', r:[6,10], w:true, c:'Como el remo inclinado, aguantando 2 s arriba con los omóplatos juntos y bajando en 3 s.'}]},
- {id:'post', name:'Espalda y glúteo', start:1, day:'B', vars:[
+ {id:'pull', name:'Espalda y bíceps', start:0, day:'AB', maxKg:25, vars:[
+  {n:'Remo con mancuerna a una mano', r:[8,15], side:true, w:true, kg0:10, c:'Una mano apoyada en una silla y los pies separados, tronco inclinado con la espalda recta. Tira de la mancuerna hacia la cadera con el codo pegado al cuerpo y baja controlado. Cuenta por brazo.'},
+  {n:'Remo inclinado con dos mancuernas', r:[8,15], w:true, kg0:10, c:'De pie, rodillas algo dobladas y tronco inclinado unos 45° con la espalda recta. Tira de las dos mancuernas hacia la cintura juntando los omóplatos.'},
+  {n:'Remo inclinado con pausa', r:[6,12], w:true, kg0:10, c:'Como el remo inclinado, aguantando 2 s arriba con los omóplatos juntos y bajando en 3 s.'}]},
+ {id:'post', name:'Glúteo y espalda baja', start:1, day:'B', vars:[
   {n:'Puente de glúteo', r:[10,20], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados cerca del culo. Empuja con los talones y sube la cadera hasta que hombros, cadera y rodillas queden en línea recta. Baja despacio.'},
   {n:'Puente con pausa', r:[8,15], c:'Túmbate boca arriba, rodillas dobladas y pies apoyados. Sube la cadera hasta que hombros, cadera y rodillas formen una línea recta, aguanta ahí 3 s apretando los glúteos y baja despacio. Los hombros y la cabeza no se despegan del suelo.'},
-  {n:'Superman con pausa', r:[8,15], c:'Boca abajo, levanta brazos y piernas a la vez. Aguanta 2 s arriba.'},
   {n:'Puente a una pierna', r:[6,15], side:true, c:'Como el puente normal, pero con una pierna estirada en el aire. Empuja con el talón de la pierna apoyada y sube la cadera sin que se tuerza. Cuenta por pierna.'},
-  {n:'Nadador', r:[10,20], c:'Boca abajo, brazos y piernas en el aire. Alterna brazo y pierna contrarios. Cada lado cuenta 1.'},
-  {n:'Y-T-W en el suelo', r:[5,10], c:'Boca abajo, pecho levantado. Forma Y, T y W con los brazos, aguantando 2 s en cada una. 1 ronda = 1 rep.'},
-  {n:'Puente a una pierna con pausa', r:[6,12], side:true, c:'Puente a una pierna: sube la cadera hasta la línea recta, aguanta 3 s arriba y baja despacio. Cuenta por pierna.'}]},
+  {n:'Peso muerto rumano', r:[8,15], w:true, kg0:10, c:'De pie con una mancuerna en cada mano, rodillas un poco dobladas. Echa la cadera atrás con la espalda recta, bajando las pesas pegadas a las piernas hasta notar tensión detrás del muslo. Sube apretando glúteos.'},
+  {n:'Peso muerto rumano a una pierna', r:[6,12], side:true, w:true, kg0:5, c:'Sobre una pierna, con una mancuerna en la mano contraria. Inclina el tronco mientras la otra pierna sube estirada hacia atrás, cadera recta. Cuenta por pierna.'}]},
  {id:'core', name:'Core', start:1, day:'A', vars:[
   {n:'Plancha de rodillas', r:[15,45], t:true, c:'Antebrazos y rodillas en el suelo. Cuerpo recto, aprieta abdomen y glúteos.'},
   {n:'Plancha', r:[20,60], t:true, c:'Antebrazos y puntas de los pies. Ni cadera caída ni culo en pompa.'},
@@ -254,8 +251,9 @@ const FAMS = [
   {n:'Plancha larga', r:[15,40], t:true, c:'Plancha con los antebrazos bastante por delante de la cabeza. Más palanca, más difícil.'},
   {n:'Tuck L-sit en el suelo', r:[5,20], t:true, c:'Sentado, manos en el suelo junto a la cadera. Empuja y despega el culo con las rodillas recogidas.'}]}
 ];
+const ORDER=['push','shoulder','legs','pull','core','post'];
+FAMS.sort((a,b)=>ORDER.indexOf(a.id)-ORDER.indexOf(b.id));
 const ROUNDS = 3;
-const NEED = 5; // sesiones seguidas cumpliendo antes de preguntar si subir
 const stepOf = v => v.t ? 5 : 1;
 const unitOf = v => v.t ? (v.side ? 's/lado' : 's') : (v.side ? 'reps/lado' : 'reps');
 const famById = id => FAMS.find(f=>f.id===id);
@@ -335,13 +333,9 @@ const FIG={
   {a:stand(100), b:squat()},
   {a:stand(100), b:squat(), txt:'3 s abajo'},
   {a:stand(100), b:{S:[98,44],P:[96,82],F1:[124,G],F2:[58,G-2],kh:[1,-1],kh2:[0,1],H1:[100,82],H2:[94,82]}},
-  {a:squat(), b:{S:[104,20],P:[104,58],F1:[108,100],F2:[103,101],H1:[88,54],H2:[86,56]}},
-  {a:{front:true,S:[100,26],P:[100,64],FL:[70,G],FR:[130,G],HL:[86,64],HR:[114,64]},
-   b:{front:true,S:[74,58],P:[72,92],FL:[40,G],FR:[124,G],khL:[-1,-1],HL:[64,84],HR:[84,84],ehL:[-1,0],ehR:[1,0]}},
-  {p:'wallR', a:{S:[100,24],P:[100,62],F1:[102,G],F2:[82,70],kh2:[0.3,1],H1:[146,40],H2:[86,66],eh:[0,1]},
-   b:{S:[104,56],P:[86,90],F1:[104,G],F2:[58,104],kh:[1,-1],kh2:[0,1],H1:[146,58],H2:[66,98],eh:[0,1]}, txt:'mano en la pared'},
-  {a:{S:[100,24],P:[100,62],F1:[102,G],F2:[140,82],H1:[138,30],kh2:[0,1]},
-   b:{S:[110,64],P:[86,96],F1:[104,G],F2:[136,94],kh:[1,-1],H1:[148,62]}, txt:'baja lento'}
+  {a:{...stand(100),H1:[112,40],H2:[110,42],eh:[0,1],db:[[112,40]]}, b:{...squat(),H1:[118,62],H2:[116,64],eh:[0,1],db:[[118,62]]}, txt:'mancuerna al pecho'},
+  {p:'chairL', a:{S:[100,26],P:[100,64],F1:[120,G],F2:[66,84],kh2:[0,1],H1:[102,64],H2:[98,64]}, b:{S:[98,48],P:[94,86],F1:[122,G],kh:[1,-1],F2:[66,84],kh2:[0,1],H1:[100,86],H2:[96,86]}, txt:'pie atrás en la silla'},
+  {p:'chairL', a:{S:[100,26],P:[100,64],F1:[120,G],F2:[66,84],kh2:[0,1],H1:[102,64],H2:[98,64],db:[[102,64]]}, b:{S:[98,48],P:[94,86],F1:[122,G],kh:[1,-1],F2:[66,84],kh2:[0,1],H1:[100,86],H2:[96,86],db:[[100,86]]}, txt:'pie atrás en la silla'}
  ],
  post:[
   {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],H1:[93,110],kh:[0,-1],eh:[0,1],head:[42,106]},
@@ -350,20 +344,11 @@ const FIG={
   {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],H1:[93,110],kh:[0,-1],eh:[0,1],head:[42,106]},
    z:1.6,cx:90,arrow:[89,111,89,96],
    b:{ll:[30,34],S:[54,106],P:[89,90],F1:[116,G],H1:[93,110],kh:[0,-1],eh:[0,1],head:[42,106]}, txt:'3 s arriba'},
-  {a:{S:[128,106],P:[90,106],F1:[40,108],H1:[168,106],eh:[0,-1],head:[141,104]},
-   b:{S:[126,98],P:[90,106],F1:[42,94],H1:[164,84],eh:[0,-1],head:[138,92]}, txt:'2 s arriba'},
   {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],F2:[152,96],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]},
    z:1.6,cx:90,arrow:[89,111,89,96],
    b:{ll:[30,34],S:[54,106],P:[89,90],F1:[116,G],F2:[147,64],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]}},
-  {a:{S:[126,100],P:[90,106],F1:[42,104],F2:[42,92],H1:[166,84],H2:[166,102],eh:[0,-1],head:[138,95]},
-   b:{S:[126,100],P:[90,106],F1:[42,92],F2:[42,104],H1:[166,102],H2:[166,84],eh:[0,-1],head:[138,95]}},
-  {extra:[
-    {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[66,-8],HR:[134,-8],tx:35-62,ty:42.6,sc:.62},
-    {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[49,24],HR:[151,24],tx:100-62,ty:42.6,sc:.62},
-    {front:true,S:[100,24],P:[100,62],FL:[94,G],FR:[106,G],HL:[72,6],HR:[128,6],ehL:[0,1],ehR:[0,1],tx:165-62,ty:42.6,sc:.62}], txt:'Y · T · W (visto desde arriba)'},
-  {a:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],F2:[152,96],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]},
-   z:1.6,cx:90,arrow:[89,111,89,96],
-   b:{ll:[30,34],S:[54,106],P:[89,90],F1:[116,G],F2:[147,64],kh:[0,-1],kh2:[0,-1],H1:[93,110],eh:[0,1],head:[42,106]}, txt:'3 s arriba'}
+  {a:{...stand(96),H1:[100,64],db:[[100,64]]}, b:{S:[120,49],P:[84,62],F1:[92,G],F2:[88,G],kh:[1,0],H1:[120,88],eh:[1,0],db:[[120,88]]}, txt:'cadera atrás, espalda recta'},
+  {a:{...stand(96),H1:[100,64],db:[[100,64]]}, b:{S:[126,54],P:[90,62],F1:[92,G],F2:[42,70],kh2:[0,1],H1:[126,92],eh:[1,0],db:[[126,92]]}, txt:'pierna de atrás estirada'}
  ],
  core:[
   {b:{...knees([70,110],-17),H1:[148,G],eh:[-1,1],kh:[0,1]}},
@@ -405,6 +390,9 @@ const STR_FIG={
  quad:{b:{S:[100,24],P:[100,62],F1:[101,G],F2:[86,58],kh2:[0,1],H2:[86,58],eh2:[-1,0],H1:[112,58]}, txt:'talón al culo'},
  ham:{b:{S:[109,85],P:[80,108],F1:[130,110],H1:[140,104],eh:[0,-1],head:[118,77]}, txt:'espalda recta'},
  fig4:{z:1.4,cx:90,b:{ll:[30,34],S:[54,106],P:[92,106],F1:[116,G],kh:[0,-1],F2:[110,82],kh2:[1,0],H1:[100,90],eh:[0,-1],head:[42,106]}, txt:'tobillo sobre la rodilla'},
+ wrists:{b:{S:[130,73],P:[92,87],F1:[67,110],H1:[130,G],kh:[0,1],head:[141,80]}, txt:'balancea sobre las muñecas'},
+ airsquat:{a:stand(100), b:{S:[104,40],P:[90,74],F1:[106,G],F2:[102,G],H1:[140,44],H2:[138,48],kh:[1,-1]}, txt:'sin llegar al fondo'},
+ legswing:{p:'wallR', a:{S:[100,24],P:[100,62],F1:[100,G],F2:[136,90],H1:[146,40],eh:[0,1]}, b:{S:[100,24],P:[100,62],F1:[100,G],F2:[64,96],H1:[146,40],eh:[0,1]}},
  cobra:{b:{S:[126,82],P:[92,108],F1:[42,110],H1:[130,G],eh:[-1,0]}, txt:'cadera en el suelo'},
  child:{b:{S:[116,104],P:[80,98],F1:[76,110],kh:[1,1],H1:[154,110],eh:[0,-1],head:[128,106]}, txt:'brazos estirados'}
 };
@@ -531,6 +519,8 @@ const dayFams = d => FAMS.filter(f=>f.day.includes(d));
 function renderHome(){
   const wc=weekCount(); $('week-chip').textContent = wc===1 ? '1 sesión esta semana' : `${wc} sesiones esta semana`;
   const missing=FAMS.filter(f=>!S.fam[f.id]);
+  const today=S.history.filter(h=>new Date(h.d).toDateString()===new Date().toDateString()).length;
+  $('week-note').textContent = wc>=6 ? 'Llevas 6 sesiones esta semana. Hoy toca descansar: si te apetece moverte, haz la sesión de movilidad.' : today ? 'Ya has entrenado hoy. Mañana más.' : 'Circuito de 4 ejercicios × 3 rondas, con calentamiento y estiramientos. Lo ideal son 5-6 sesiones a la semana con 1-2 días de descanso.';
   $('start-session').hidden = missing.length>0;
   if (missing.length){
     $('plan').innerHTML=`<div class="label">Ejercicios nuevos</div><h3>${missing.map(f=>f.name).join(' y ')}</h3>
@@ -545,7 +535,7 @@ function renderHome(){
     const st=S.fam[f.id], v=f.vars[st.lvl];
     const bars=f.vars.map((_,k)=>`<i class="${k<st.lvl?'done':k===st.lvl?'cur':''}" style="height:${40+60*k/(f.vars.length-1)}%"></i>`).join('');
     return `${i?'<hr class="divider">':''}<div class="ex">
-      <div><div class="label">${f.name} · peldaño ${st.lvl+1}/${f.vars.length} · ${Math.min(st.streak||0,NEED)}/${NEED} para subir</div><div class="name">${esc(v.n)}</div></div>
+      <div><div class="label">${f.name} · peldaño ${st.lvl+1}/${f.vars.length}${st.justo?' · 1/2 para subir':''}</div><div class="name">${esc(v.n)}</div></div>
       <div class="target">${ROUNDS}×${st.target}<span class="muted" style="font-size:.9rem;font-family:var(--body);font-weight:500"> ${unitOf(v)}</span>${v.w?`<div style="font-size:1rem;color:var(--warm);text-align:right">${fmtKg(st.kg)}</div>`:''}</div>
       <div class="ladder" aria-hidden="true">${bars}</div>
       <details class="howto"><summary>Cómo se hace</summary><div class="fig-box">${figSVG(f.id,st.lvl)}</div><p class="cue" style="margin-top:6px">${esc(v.c)}</p></details>
@@ -555,12 +545,12 @@ function renderHome(){
         ${v.w?`<button class="link" data-kg="${f.id}" data-d="-1">−2,5 kg</button><button class="link" data-kg="${f.id}" data-d="1">+2,5 kg</button>`:''}
       </div></div>`;
   }).join('');
-  $('plan').querySelectorAll('[data-kg]').forEach(b=>b.onclick=()=>{ const f=famById(b.dataset.kg), st=S.fam[f.id]; st.kg=Math.min(f.maxKg,roundKg(st.kg+ +b.dataset.d*KG)); st.streak=0; save(); renderHome() });
+  $('plan').querySelectorAll('[data-kg]').forEach(b=>b.onclick=()=>{ const f=famById(b.dataset.kg), st=S.fam[f.id]; st.kg=Math.min(maxKg(f),roundKg(st.kg+ +b.dataset.d*KG)); st.justo=0; save(); renderHome() });
   $('plan').querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{ dayPick=b.dataset.day; renderHome() });
   }
   $('plan').querySelectorAll('[data-adj]').forEach(b=>b.onclick=()=>{
     const f=famById(b.dataset.adj), st=S.fam[f.id]; st.lvl=Math.min(f.vars.length-1,Math.max(0,st.lvl+ +b.dataset.d));
-    st.target=f.vars[st.lvl].r[0]; st.fails=0; st.streak=0; save(); renderHome();
+    const nv=f.vars[st.lvl]; st.target=nv.r[0]; st.fails=0; st.justo=0; if (nv.w){ if (st.kg==null) st.kg=nv.kg0||10 } else delete st.kg; save(); renderHome();
   });
   $('rest-opts').innerHTML=[20,30,45,60,90].map(s=>`<button class="chip ${S.rest===s?'on':''}" data-rest="${s}">${s} s</button>`).join('');
   $('rest-opts').querySelectorAll('[data-rest]').forEach(b=>b.onclick=()=>{ S.rest=+b.dataset.rest; save(); renderHome() });
@@ -612,8 +602,8 @@ $('t-ok').onclick=()=>{
   T.tried.add(T.lvl);
   if (v.w){
     let kg=tKg.get(), target;
-    if (r<mn){ kg=roundKg(kg-KG); target=mn } else if (r>mx+3){ kg=Math.min(f.maxKg,kg+KG); target=mn } else target=Math.max(mn,Math.min(mx,r-2));
-    T.placed[f.id]={lvl:T.lvl, target, kg, fails:0, streak:0};
+    if (r<mn){ kg=roundKg(kg-KG); target=mn } else if (r>mx+3){ kg=Math.min(maxKg(f),kg+KG); target=mn } else target=Math.max(mn,Math.min(mx,r-2));
+    T.placed[f.id]={lvl:T.lvl, target, kg, fails:0};
     T.fi++;
     if (T.fi>=T.ids.length){ Object.assign(S.fam,T.placed); S.placed=true; save(); T=null; keepAwake(false); show('home'); renderHome(); return }
     T.lvl=famById(T.ids[T.fi]).start; T.tried=new Set(); renderTest(); return;
@@ -621,7 +611,7 @@ $('t-ok').onclick=()=>{
   if (r<mn && T.lvl>0 && !T.tried.has(T.lvl-1)){ T.lvl--; testRest(`Ahora probarás uno más fácil: ${f.vars[T.lvl].n}.`); return }
   if (r>Math.round(mx*1.2) && T.lvl<f.vars.length-1 && !T.tried.has(T.lvl+1)){ T.lvl++; testRest(`Muy bien. Ahora probarás uno más difícil: ${f.vars[T.lvl].n}.`); return }
   let target = r<mn ? Math.max(step, Math.round(r*0.8/step)*step) : Math.max(mn, Math.min(mx, Math.round(r*0.7/step)*step));
-  T.placed[f.id]={lvl:T.lvl, target, fails:0, streak:0};
+  T.placed[f.id]={lvl:T.lvl, target, fails:0};
   T.fi++;
   if (T.fi>=T.ids.length){
     Object.assign(S.fam,T.placed); S.placed=true; save(); T=null; keepAwake(false); show('home'); renderHome(); return;
@@ -647,11 +637,12 @@ const sStep = stepper($('s-val'),$('s-minus'),$('s-plus'),()=>X?stepOf(curVar())
 const sWatch = makeStopwatch($('s-clock'),$('s-timer-btn'),s=>sStep.set(s),()=>X?X.items[X.ei].target:0);
 $('s-timer-btn').onclick=()=>sWatch.toggle();
 function curVar(){ const it=X.items[X.ei]; return famById(it.f).vars[it.l] }
-$('start-session').onclick=()=>{
+$('start-session').onclick=()=>startStretch('warm', beginCircuit);
+function beginCircuit(){
   unlockAudio(); keepAwake(true);
   X={round:0, ei:0, day:selDay(), items:dayFams(selDay()).map(f=>({f:f.id, l:S.fam[f.id].lvl, target:S.fam[f.id].target, kg:S.fam[f.id].kg, sets:[]}))};
   show('session'); renderWork();
-};
+}
 function totalSets(){ return ROUNDS*X.items.length }
 function doneSets(){ return X.round*X.items.length + X.ei }
 function renderWork(){
@@ -661,7 +652,7 @@ function renderWork(){
   $('s-fig').innerHTML=figSVG(f.id,it.l);
   $('s-fam').textContent=f.name; $('s-name').textContent=v.n; $('s-cue').textContent=v.c;
   $('s-target').innerHTML=fmtTarget(v,it.target);
-  $('s-kg').hidden=!v.w; if (v.w) $('s-kg').textContent=`con ${fmtKg(it.kg)} por mancuerna`;
+  $('s-kg').hidden=!v.w; if (v.w) $('s-kg').textContent=v.one?`con una mancuerna de ${fmtKg(it.kg)}`:`con ${fmtKg(it.kg)} por mancuerna`;
   $('s-timer').hidden=!v.t; $('s-target').hidden=!!v.t;
   $('s-done-label').textContent = v.t ? 'Segundos aguantados' : '¿Cuántas hiciste?';
   sWatch.reset(); sStep.set(v.t?0:it.target);
@@ -693,34 +684,44 @@ $('s-quit').onclick=()=>{
 };
 
 /* Regla de progresión doble */
+const maxKg = f => f.maxKg||25;
+function enterVar(st, f, lvl, target){
+  const nv=f.vars[lvl]; st.lvl=lvl; st.target=target??nv.r[0];
+  if (!nv.w) delete st.kg; else if (st.kg==null) st.kg=nv.kg0||10;
+  return nv;
+}
 function progress(it){
-  const f=famById(it.f), st=S.fam[it.f], v=f.vars[st.lvl], step=stepOf(v), [mn,mx]=v.r, last=f.vars.length-1;
+  const f=famById(it.f), st=S.fam[it.f], v=f.vars[st.lvl], step=stepOf(v), [mn,mx]=v.r;
   const t=it.target, total=it.sets.reduce((a,b)=>a+b,0);
-  if (it.sets.every(s=>s>=t)){
-    st.fails=0; st.streak=(st.streak||0)+1;
-    if (st.streak>=NEED) return {k:'ask', msg:`${st.streak} sesiones seguidas cumpliendo. ¿Qué tal te ha ido?`};
-    return {k:'same', msg:`Objetivo cumplido · ${st.streak}/${NEED} para subir`};
-  }
-  st.streak=0;
+  if (it.sets.every(s=>s>=t)){ st.fails=0; return {k:'ask', msg:'Objetivo cumplido. ¿Qué tal te ha ido?'} }
+  st.justo=0;
   if (total < 0.8*t*it.sets.length){
     st.fails=(st.fails||0)+1;
     if (st.fails<2) return {k:'same', msg:`Repites ${t} ${unitOf(v)}. Si vuelve a costar, bajará.`};
     st.fails=0;
-    if (v.w && t-step<mn){ if (st.kg-KG>=KG){ st.kg=roundKg(st.kg-KG); st.target=mx-2; return {k:'down', msg:`Baja a ${fmtKg(st.kg)}, ${st.target} ${unitOf(v)}`} } st.target=Math.max(1,t-step); return {k:'down', msg:`Baja a ${st.target} ${unitOf(v)}`} }
-    if (t-step<mn && st.lvl>0){ st.lvl--; const pv=f.vars[st.lvl]; st.target=Math.max(pv.r[0], pv.r[1]-2*stepOf(pv)); return {k:'down', msg:`Vuelves a ${pv.n}, ${st.target} ${unitOf(pv)}`} }
+    if (v.w && t-step<mn && st.kg-KG>=KG){ st.kg=roundKg(st.kg-KG); st.target=mx-2; return {k:'down', msg:`Baja a ${fmtKg(st.kg)}, ${st.target} ${unitOf(v)}`} }
+    if (t-step<mn && st.lvl>0){ const pv=f.vars[st.lvl-1]; enterVar(st,f,st.lvl-1,Math.max(pv.r[0], pv.r[1]-2*stepOf(pv))); return {k:'down', msg:`Vuelves a ${pv.n}, ${st.target} ${unitOf(pv)}${pv.w?' con '+fmtKg(st.kg):''}`} }
     st.target=Math.max(step,t-step); return {k:'down', msg:`Baja a ${st.target} ${unitOf(v)}`};
   }
-  st.fails=0; return {k:'same', msg:`Repites ${t} ${unitOf(v)}. El contador vuelve a 0/${NEED}.`};
+  st.fails=0; return {k:'same', msg:`Repites ${t} ${unitOf(v)}.`};
 }
 function levelUp(fid){
   const f=famById(fid), st=S.fam[fid], v=f.vars[st.lvl], last=f.vars.length-1;
-  st.streak=0; st.target+=stepOf(v);
-  if (v.w && st.target>v.r[1]){
-    if (st.kg+KG<=f.maxKg){ st.kg+=KG; st.target=v.r[0]; return `Sube el peso a ${fmtKg(st.kg)}, ${st.target} ${unitOf(v)}` }
-    if (st.lvl<last){ st.lvl++; const nv=f.vars[st.lvl]; st.kg=roundKg(st.kg*0.6); st.target=nv.r[0]; return `Nuevo ejercicio: ${nv.n}, ${st.target} ${unitOf(nv)} con ${fmtKg(st.kg)}` }
-  }
-  if (st.target>v.r[1] && st.lvl<last){ st.lvl++; const nv=f.vars[st.lvl]; st.target=nv.r[0]; return `Nuevo ejercicio: ${nv.n}, ${st.target} ${unitOf(nv)}` }
+  st.justo=0; st.target+=stepOf(v);
+  if (st.target<=v.r[1]) return `Sube a ${st.target} ${unitOf(v)}`;
+  if (v.w && st.kg+KG<=maxKg(f)){ st.kg+=KG; st.target=v.r[0]; return `Sube el peso a ${fmtKg(st.kg)}, ${st.target} ${unitOf(v)}` }
+  if (st.lvl<last){ const nv=f.vars[st.lvl+1]; if (nv.w) st.kg=nv.kg0||10; enterVar(st,f,st.lvl+1); return `Nuevo ejercicio: ${nv.n}, ${st.target} ${unitOf(nv)}${nv.w?' con '+fmtKg(st.kg):''}` }
   return `Sube a ${st.target} ${unitOf(v)}`;
+}
+function answer(fid, ans){
+  const f=famById(fid), st=S.fam[fid], v=f.vars[st.lvl];
+  if (ans==='facil') return {k:'up', msg:levelUp(fid)};
+  if (ans==='justo'){
+    st.justo=(st.justo||0)+1;
+    if (st.justo>=2) return {k:'up', msg:levelUp(fid)};
+    return {k:'same', msg:`Repites ${st.target} ${unitOf(v)}. Si la próxima vez también va justo, sube.`};
+  }
+  st.justo=0; return {k:'same', msg:`Repites ${st.target} ${unitOf(v)}. Bien hecho, consolídalo.`};
 }
 function finishSession(){
   clearInterval(restIv); keepAwake(false); beep(2);
@@ -729,7 +730,7 @@ function finishSession(){
   S.history.push(entry);
   save();
   const asks=res.filter(r=>r.p.k==='ask').length;
-  $('sum-title').textContent = asks ? 'Una pregunta' : 'Sesión hecha';
+  $('sum-title').textContent = asks ? '¿Qué tal ha ido?' : 'Sesión hecha';
   $('sum-list').innerHTML = res.map(({it,p},i)=>{
     const f=famById(it.f), v=f.vars[it.l];
     return `${i?'<hr class="divider">':''}<div class="stack" style="gap:4px">
@@ -743,14 +744,8 @@ function finishSession(){
   }).join('');
   $('sum-list').querySelectorAll('[data-ans]').forEach(b=>b.onclick=()=>{
     const i=+b.dataset.i, it=res[i].it, box=$('ans-'+i);
-    if (b.dataset.ans==='limite'){
-      const v=famById(it.f).vars[S.fam[it.f].lvl];
-      entry.x[i].o='same';
-      box.innerHTML=`<span class="tag same">Repites ${S.fam[it.f].target} ${unitOf(v)}. Te volverá a preguntar la próxima vez.</span>`;
-    } else {
-      entry.x[i].o='up';
-      box.innerHTML=`<span class="tag up">${esc(levelUp(it.f))}</span>`;
-    }
+    const o=answer(it.f, b.dataset.ans); entry.x[i].o=o.k;
+    box.innerHTML=`<span class="tag ${o.k}">${esc(o.msg)}</span>`;
     save();
   });
   X=null; dayPick=null;
@@ -771,17 +766,21 @@ const STRETCHES={
  thoracic:{n:'Rotación de espalda', side:true, c:'A cuatro patas, lleva una mano a la nuca y gira abriendo el codo hacia el techo. Sigue el codo con la mirada.'},
  hipflex:{n:'Flexor de cadera', side:true, c:'Rodilla de atrás en el suelo y pie de delante adelantado. Empuja la cadera hacia delante con el tronco recto.'},
  fig4:{n:'Glúteo tumbado', side:true, c:'Boca arriba, cruza un tobillo sobre la rodilla contraria y acerca esa pierna al pecho.'},
+ wrists:{n:'Muñecas', c:'A cuatro patas con las manos bajo los hombros. Balancea el cuerpo adelante y atrás y en círculos, cargando peso en las muñecas poco a poco.'},
+ airsquat:{n:'Sentadillas suaves', c:'Sentadillas lentas y sin llegar al fondo del todo, para calentar rodillas y cadera.'},
+ legswing:{n:'Balanceo de piernas', side:true, c:'De pie, apoyado en la pared, balancea una pierna adelante y atrás de forma suave y cada vez más amplia.'},
  cobra:{n:'Cobra', c:'Boca abajo, manos bajo los hombros. Estira los brazos y levanta el pecho dejando la cadera en el suelo.'}
 };
 const ROUTINES={
- post:{title:'Estiramientos', list:[['chest',30],['cross',30],['triceps',30],['quad',30],['ham',30],['child',30]]},
- mob:{title:'Movilidad', list:[['circles',45],['catcow',60],['thoracic',60],['chest',60],['cross',60],['triceps',60],['hipflex',60],['quad',60],['ham',60],['fig4',60],['cobra',45],['child',60]]}
+ warm:{title:'Calentamiento', end:'Saltar calentamiento', list:[['circles',30],['wrists',20],['catcow',20],['airsquat',30],['legswing',20]]},
+ post:{title:'Estiramientos', end:'Saltar estiramientos', list:[['chest',30],['cross',30],['triceps',30],['quad',30],['ham',30],['child',30]]},
+ mob:{title:'Movilidad', end:'Terminar', list:[['circles',45],['catcow',60],['thoracic',60],['chest',60],['cross',60],['triceps',60],['hipflex',60],['quad',60],['ham',60],['fig4',60],['cobra',45],['child',60]]}
 };
 let R=null, stIv=null;
 function startStretch(kind, onDone){
   unlockAudio(); keepAwake(true);
   R={...ROUTINES[kind], i:-1, onDone, paused:false};
-  show('stretch'); $('st-title').textContent=R.title; nextStretch();
+  show('stretch'); $('st-title').textContent=R.title; $('st-end').textContent=R.end; nextStretch();
 }
 function nextStretch(){
   R.i++;
